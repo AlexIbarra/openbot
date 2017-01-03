@@ -83,7 +83,7 @@
  *
  * WARNING:    The RPI uses the PWM1 subsystem to produce audio. As such
  *             please refrain from playing audio on the RPI while this code 
- *             is running.
+ *             is running..
  * *********************************************************************/
 class rpiPWM1 {
 
