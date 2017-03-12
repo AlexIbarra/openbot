@@ -1,29 +1,40 @@
-#include "moduloCamara.h"
 #include <iostream>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include "moduloCamara.h"
 
-//Las inicializamos en el punto medio de la pantalla, para que no se muevan los motores de inicio
-int x = 320, y = 240;
+using namespace cv;
+using namespace std;
 
-int getX(){
+Camara::Camara() {
+    x = 0;
+    y = 0;
+}
+
+Camara::Camara(int ilowh, int ihighh, int ilows, int isighs, int ilowv, int ihighv) {
+    x = 0;
+    y = 0;
+    iLowH = ilowh;
+    iHighH = ihighh;
+    iLowS = ilows; 
+    iHighS = isighs;
+    iLowV = ilowv;
+    iHighV = ihighv;
+}
+
+int Camara::getX() {
     return x;
 }
-int getY(){
+
+int Camara::getY() {
     return y;
 }
 
-void captura(){
-    VideoCapture cap(0); //capture the video from webcam
-
-    if ( !cap.isOpened() )  // if not success, exit program
-    {
-        cout << "Cannot open the web cam" << endl;
-        //return -1;
-    }
+void Camara::initCamara() {
 
     namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
-    int dimensFoto = 0;
+    
+//    int dimensFoto = 0;
     int iLowH = 170;
     int iHighH = 179;
 
@@ -42,6 +53,39 @@ void captura(){
 
     createTrackbar("LowV", "Control", &iLowV, 255);//Value (0 - 255)
     createTrackbar("HighV", "Control", &iHighV, 255);
+    
+}
+
+//Las inicializamos en el punto medio de la pantalla, para que no se muevan los motores de inicio
+void Camara::captura(){
+    VideoCapture cap(0); //capture the video from webcam
+
+    if ( !cap.isOpened() )  // if not success, exit program
+    {
+        cout << "Cannot open the web cam" << endl;
+        //return -1;
+    }
+
+    namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+    int dimensFoto = 0;
+//    int iLowH = 170;
+//    int iHighH = 179;
+//
+//    int iLowS = 150; 
+//    int iHighS = 255;
+//
+//    int iLowV = 60;
+//    int iHighV = 255;
+
+    //Create trackbars in "Control" window
+//    createTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
+//    createTrackbar("HighH", "Control", &iHighH, 179);
+//
+//    createTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
+//    createTrackbar("HighS", "Control", &iHighS, 255);
+//
+//    createTrackbar("LowV", "Control", &iLowV, 255);//Value (0 - 255)
+//    createTrackbar("HighV", "Control", &iHighV, 255);
 
     int iLastX = -1; 
     int iLastY = -1;
@@ -91,35 +135,8 @@ void captura(){
             line(imgLines, Point(cols/2, iLastY), Point(cols/2, rows), Scalar(0,0,255), 2);
             dimensFoto++;
         }
-        /*if(dimensFoto ==0){
-            rows = imgThresholded.rows;
-            cols = imgThresholded.cols;
-            cout << " Filas: " << rows << " Columnas: "  << cols << endl;
-            dimensFoto++;
 
-            //dibuja una X sacando el centro
-            line(imgLines, Point(cols/2, rows/2), Point(iLastX, iLastY), Scalar(0,0,255), 2);
-            line(imgLines, Point(cols/2, rows/2), Point(iLastX, rows), Scalar(0,0,255), 2);
-            line(imgLines, Point(cols/2, rows/2), Point(cols, iLastY), Scalar(0,0,255), 2);
-            line(imgLines, Point(cols/2, rows/2), Point(cols, rows), Scalar(0,0,255), 2);
-
-            //cuadricula vertical
-            line(imgLines, Point(cols/4, iLastY), Point(cols/4, rows), Scalar(0,0,255), 2);
-            //line(imgLines, Point(cols, iLastY), Point(cols, rows), Scalar(0,0,255), 2);
-            line(imgLines, Point(cols/2, iLastY), Point(cols/2, rows), Scalar(0,0,255), 2);
-            line(imgLines, Point(cols/2+cols/4, iLastY), Point(cols/2+cols/4, rows), Scalar(0,0,255), 2);
-            //cuadricula vertical
-
-            line(imgLines, Point(iLastX, rows/4), Point(cols, rows/4), Scalar(0,0,255), 2);	
-            //line(imgLines, Point(iLastX, rows), Point(cols, rows), Scalar(0,0,255), 2);
-            line(imgLines, Point(iLastX, rows/2), Point(cols, rows/2), Scalar(0,0,255), 2);
-            line(imgLines, Point(iLastX, rows/2+rows/4), Point(cols, rows/2+rows/4), Scalar(0,0,255), 2);
-
-        }*/
-	
-
-
-   // if the area <= 10000, I consider that the there are no object in the image and it's because of the noise, the area is not zero 
+        // if the area <= 10000, I consider that the there are no object in the image and it's because of the noise, the area is not zero 
         if (dArea > 10000) {
             //calculate the position of the ball
             int posX = dM10 / dArea;
@@ -149,6 +166,4 @@ void captura(){
             break; 
         }
     }
-
-    //return 0;
 }
