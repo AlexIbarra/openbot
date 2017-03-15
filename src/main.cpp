@@ -25,7 +25,7 @@ int main( void ) {
     
     try {
         
-        Broker * brk = new Broker ("broker", "brk_1", "127.0.0.1", 1883);
+        Broker * brk = new Broker ("brk_1", "127.0.0.1", 1883);
         
         while(1) {
             

@@ -2,32 +2,34 @@
 #include <cstring>
 #include <stdexcept>
 #include "moduloBroker.h"
-#include <mosquittopp.h>
 #include <mosquitto.h>
 
 using namespace std;
-using namespace mosqpp;
 
-Broker::Broker(const char * _id, const char * _topic, const char * _host, int _port) : mosquittopp(_id)
+Broker::Broker(const char * _id, const char * _host, int _port)
 {
-    this->keepalive = 60;
     this->id = _id;
     this->port= _port;
     this->host = _host;
-    this->topic = _topic;
  
-    mosqpp::lib_init(); // Initialize libmosquitto
+    mosquitto_lib_init(); // Initialize libmosquitto
+    
+    this->mosq = mosquitto_new (_id, true, NULL);
+    if (!mosq) {
+        throw runtime_error("##Cant initialize Mosquitto library##");
+    }
  
-    if ( connect_async(host, port, keepalive) == MOSQ_ERR_ERRNO) { // Connect to MQTT Broker
-            throw runtime_error("##ERROR##");
+    if ( mosquitto_connect (this->mosq, _host, _port, 0) != MOSQ_ERR_SUCCESS) { // Connect to MQTT Broker
+            throw runtime_error("##Cant connect to Mosquitto server##");
     }    
   
-    loop_start();   // Start thread managing connection / publish / subscribe
+    mosquitto_loop_start(this->mosq);   // Start thread managing connection / publish / subscribe
 };
 
 Broker::~Broker() {
-    loop_stop(); // Kill the thread
-    mosqpp::lib_cleanup(); // Mosquitto library cleanup
+    mosquitto_loop_stop(this->mosq, true); // Kill the thread
+    mosquitto_destroy (this->mosq);
+    mosquitto_lib_cleanup(); // Mosquitto library cleanup
 }
 
 void Broker::on_connect(int rc) {
@@ -39,17 +41,23 @@ void Broker::on_connect(int rc) {
     }
 }
 
-bool Broker::send_msg (const char *message) {
-    // Send message - depending on QoS, mosquitto lib managed re-submission this the thread
-    //
-    // * NULL : Message Id (int *) this allow to latter get status of each message
-    // * topic : topic to be used
-    // * lenght of the message
-    // * message
-    // * qos (0,1,2)
-    // * retain (boolean) - indicates if message is retained on broker or not
-    // Should return MOSQ_ERR_SUCCESS
-    int ret =  publish (NULL, this->topic, strlen(message), message, 2, false);
+bool Broker::subscribe_topic(const char * topic) {
+
+    int ret = mosquitto_subscribe(this->mosq, NULL, topic, 0);
+    if (ret) {
+        cout << " ##-Cant publish topic {" << topic << "}-## " << std::endl;
+        return false;
+    }
+    return true;
+}
+
+char* Broker::receive_msg() {
+
+    return "";
+}
+
+bool Broker::send_msg (const char *message, const char * topic) {    
+    int ret = mosquitto_publish (mosq, NULL, topic, strlen(message), message, 0, false);
     return (ret == MOSQ_ERR_SUCCESS);
 }
 
