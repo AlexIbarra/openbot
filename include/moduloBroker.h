@@ -1,17 +1,19 @@
 #ifndef MODULOBROKER_H
 #define MODULOBROKER_H
 
-#include <mosquittopp.h>
 #include <mosquitto.h>
 
+using namespace std;
 
-class Broker : public mosqpp::mosquittopp {
+#define MQTT_USERNAME "admin"
+#define MQTT_PASSWORD "admin"
+
+class Broker {
 private:
+    struct mosquitto *mosq;
     const char * host;
     const char * id;
-    const char * topic;
     int		port;
-    int		keepalive;
 
     void on_connect(int rc);
     void on_disconnect();
@@ -20,9 +22,11 @@ private:
     void on_subcribe(int mid, int qos_count, const int *granted_qos);
 
 public:
-    Broker(const char *id, const char * _topic, const char *host, int port);
+    Broker(const char *id, const char *host, int port);
     ~Broker();
-    bool send_msg(const char *message);
+    bool send_msg(const char *message, const char * topic);
+    char* receive_msg();
+    bool subscribe_topic(const char * topic);
 };
 
 #endif /* MODULOBROKER_H */
