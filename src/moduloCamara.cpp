@@ -34,15 +34,6 @@ void Camara::initCamara() {
 
     namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
     
-//    int dimensFoto = 0;
-    int iLowH = 170;
-    int iHighH = 179;
-
-    int iLowS = 150; 
-    int iHighS = 255;
-
-    int iLowV = 60;
-    int iHighV = 255;
 
     //Create trackbars in "Control" window
     createTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
@@ -66,26 +57,8 @@ void Camara::captura(){
         //return -1;
     }
 
-    namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+    //namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
     int dimensFoto = 0;
-//    int iLowH = 170;
-//    int iHighH = 179;
-//
-//    int iLowS = 150; 
-//    int iHighS = 255;
-//
-//    int iLowV = 60;
-//    int iHighV = 255;
-
-    //Create trackbars in "Control" window
-//    createTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
-//    createTrackbar("HighH", "Control", &iHighH, 179);
-//
-//    createTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
-//    createTrackbar("HighS", "Control", &iHighS, 255);
-//
-//    createTrackbar("LowV", "Control", &iLowV, 255);//Value (0 - 255)
-//    createTrackbar("HighV", "Control", &iHighV, 255);
 
     int iLastX = -1; 
     int iLastY = -1;
@@ -98,14 +71,14 @@ void Camara::captura(){
     Mat imgLines = Mat::zeros( imgTmp.size(), CV_8UC3 );;
  
 
-    while (true) {
+  while (true) {
         Mat imgOriginal;
         bool bSuccess = cap.read(imgOriginal); // read a new frame from video
 
          if (!bSuccess) //if not success, break loop
         {
             cout << "Cannot read a frame from video stream" << endl;
-            break;
+			//break;
         }
 
         Mat imgHSV;
@@ -142,28 +115,31 @@ void Camara::captura(){
             int posX = dM10 / dArea;
             int posY = dM01 / dArea;
 
-            if (iLastX >= 0 && iLastY >= 0 && posX >= 0 && posY >= 0)
+            /*if (iLastX >= 0 && iLastY >= 0 && posX >= 0 && posY >= 0)
             {
                 //Draw a red line from the previous point to the current point
                 line(imgLines, Point(posX, posY), Point(iLastX, iLastY), Scalar(0,255,0), 2);
-            }
+            }*/
 
             iLastX = posX;
             iLastY = posY;
 
             x = posX;
             y = posY;
+            cout << "x " << x << endl;
+            cout << "y " << y << endl;
+            break;
         }
 
-        imshow("Thresholded Image", imgThresholded); //show the thresholded image
+        //imshow("Thresholded Image", imgThresholded); //show the thresholded image
 
         imgOriginal = imgOriginal + imgLines;
-        imshow("Original", imgOriginal); //show the original image
+        //imshow("Original", imgOriginal); //show the original image
 
         if (waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
         {
             cout << "esc key is pressed by user" << endl;
-            break; 
+           //break; 
         }
-    }
+  }
 }

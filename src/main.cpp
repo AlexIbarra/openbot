@@ -21,15 +21,17 @@ int main( void ) {
     
     Camara * cam = new Camara(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV);
     initMotores();
-    cam->initCamara();
-    
+    //cam->initCamara();
+    int x,y;
     try {
         
-        Broker * brk = new Broker ("broker", "brk_1", "127.0.0.1", 1883);
+       // Broker * brk = new Broker ("broker", "brk_1", "127.0.0.1", 1883);
         
         while(1) {
-            
-            run();
+            cam->captura();
+            x = cam->getX();
+            y = cam->getY();
+            run(x,y);
         }
     
     } catch (const exception& e){					/// if exception occured in constructor. see class declaration.

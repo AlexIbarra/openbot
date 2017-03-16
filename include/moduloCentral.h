@@ -1,7 +1,7 @@
 #ifndef MODULOCENTRAL_H
 #define MODULOCENTRAL_H
 
-int run( void );
+int run( int x, int y );
 
 
 #endif /* MODULOBROKER_H */

@@ -8,6 +8,7 @@
 */
 
 void initMotores() {
+	wiringPiSetupGpio();
     // Primero se establece el modo --> void pinMode (int pin, int mode);
     pinMode(pwmMotorI, PWM_OUTPUT);
     pinMode(pwmMotorD, PWM_OUTPUT);
@@ -32,8 +33,8 @@ void retroceder(){
     pwmWrite(pwmMotorI, 312); 
 }
 void avanza(){
-    pwmWrite(pwmMotorD, 305);
-    pwmWrite(pwmMotorI, 334); 
+    pwmWrite(pwmMotorD, 300);
+    pwmWrite(pwmMotorI, 328); 
 }
 void avanzaLento(){
     pwmWrite(pwmMotorD, 313);
@@ -45,5 +46,6 @@ void rotaIzq(){
 }
 void rotaDcha(){
     pwmWrite(pwmMotorD, 322);
-    pwmWrite(pwmMotorI, 324); 
+    pwmWrite(pwmMotorI, 324);
+   
 }
