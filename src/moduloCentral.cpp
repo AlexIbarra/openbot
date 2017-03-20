@@ -5,44 +5,43 @@
 #include "moduloBroker.h"
 #include "moduloCentral.h"
 
-int run( int x, int y ) {
+int run( int x, int y, int moviAnte) {
 	cout << "X " << x << endl;
 	cout << "Y " << y << endl;
-	
-    //int x = 0, y = 0;
+	int movi = moviAnte;
+    
 ////    while (1) {
 
     //La pantalla mide 640 de ancho, establecemos el centro entre 300 y 340
-    if (x > 0 && x <= 300) {
+    if (x > 0 && x <= 270 && moviAnte != 1) {
         rotaIzq();
-        //usleep(5000000); //Mirar un tiempo para que se mueva un poco solo
-        //parar();
+        
         cout << "izquierda " << endl;
+        movi = 1;
     }
-    else if (x > 300 && x < 340) { //Está centrado
+    else if (x > 270 && x < 380 ) { //Está centrado
 	   
 	   
-		if(y < 440){
+		if(y < 440 && moviAnte != 2){
 			avanza();
 			cout << "avanza " << endl;
-		}else if (y>=440){
+			movi = 2;
+		}else if (y>=440 && moviAnte !=0){
+			cout << "parar " << endl;
 			parar();
+			movi = 0 ;
 		}
-
-		//usleep(5000000);
-		//parar();
     }
-    else if(x >=340 && x <= 640){ 
+    else if(x >=380 && x <= 640 && moviAnte != 3){ 
         
         rotaDcha();
         cout << "derecha " << endl;
-        //usleep(5000000);
-        //parar();
-    }else if(x == 0 && y == 0){
+        movi = 3;
+      }else if(x == 0 && y == 0){
 		parar();
 	}
-	//parar();
+	
 //    }
         
-    return 0;
+    return movi;
 }

@@ -2,6 +2,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "moduloCamara.h"
+#include <stdio.h>
 
 using namespace cv;
 using namespace std;
@@ -20,6 +21,7 @@ Camara::Camara(int ilowh, int ihighh, int ilows, int isighs, int ilowv, int ihig
     iHighS = isighs;
     iLowV = ilowv;
     iHighV = ihighv;
+    
 }
 
 int Camara::getX() {
@@ -64,7 +66,7 @@ void Camara::captura(){
     int iLastY = -1;
 
     //Capture a temporary image from the camera
-    Mat imgTmp;
+    Mat imgTmp, dst;
     cap.read(imgTmp); 
 
     //Create a black image with the size as the camera output
@@ -80,7 +82,9 @@ void Camara::captura(){
             cout << "Cannot read a frame from video stream" << endl;
 			//break;
         }
-
+		
+//		equalizeHist(imgOriginal,dst);
+		
         Mat imgHSV;
         cvtColor(imgOriginal, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
         Mat imgThresholded;
@@ -126,15 +130,15 @@ void Camara::captura(){
 
             x = posX;
             y = posY;
-            cout << "x " << x << endl;
-            cout << "y " << y << endl;
+            //cout << "x " << x << endl;
+            //cout << "y " << y << endl;
             break;
         }
 
-        //imshow("Thresholded Image", imgThresholded); //show the thresholded image
+       // imshow("Thresholded Image", imgThresholded); //show the thresholded image
 
-        imgOriginal = imgOriginal + imgLines;
-        //imshow("Original", imgOriginal); //show the original image
+        //imgOriginal = imgOriginal + imgLines;
+        imshow("Original", imgOriginal); //show the original image
 
         if (waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
         {

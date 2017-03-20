@@ -41,11 +41,11 @@ void avanzaLento(){
     pwmWrite(pwmMotorI, 326); 
 }
 void rotaIzq(){
-    pwmWrite(pwmMotorD, 315);
-    pwmWrite(pwmMotorI, 317); 
+    pwmWrite(pwmMotorD, 310);
+    pwmWrite(pwmMotorI, 310); 
 }
 void rotaDcha(){
-    pwmWrite(pwmMotorD, 322);
-    pwmWrite(pwmMotorI, 324);
+    pwmWrite(pwmMotorD, 328);
+    pwmWrite(pwmMotorI, 328);
    
 }

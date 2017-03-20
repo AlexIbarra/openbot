@@ -13,25 +13,34 @@ int main( void ) {
     int iLowH = 170;
     int iHighH = 179;
 
-    int iLowS = 150; 
+    int iLowS = 50; //150 estaba
     int iHighS = 255;
 
     int iLowV = 60;
     int iHighV = 255;
     
+    bool encontrado = false;
+    
     Camara * cam = new Camara(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV);
     initMotores();
-    //cam->initCamara();
-    int x,y;
+   // cam->initCamara();
+    int x,y, moviAnte = -1;
     try {
         
        // Broker * brk = new Broker ("broker", "brk_1", "127.0.0.1", 1883);
         
-        while(1) {
+        while(!encontrado) {
             cam->captura();
             x = cam->getX();
             y = cam->getY();
-            run(x,y);
+            if(moviAnte == 0 && y>=440   && x > 270 && x < 380 ){
+				avanza();
+				usleep(12000000);
+				parar();
+				cout << "Encontrado" << endl;
+				encontrado = true;
+			}else
+                 moviAnte = run(x,y, moviAnte);
         }
     
     } catch (const exception& e){					/// if exception occured in constructor. see class declaration.
