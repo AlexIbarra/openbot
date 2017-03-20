@@ -135,10 +135,10 @@ void Camara::captura(){
             break;
         }
 
-       // imshow("Thresholded Image", imgThresholded); //show the thresholded image
+        //imshow("Thresholded Image", imgThresholded); //show the thresholded image
 
         //imgOriginal = imgOriginal + imgLines;
-        imshow("Original", imgOriginal); //show the original image
+        //imshow("Original", imgOriginal); //show the original image
 
         if (waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
         {

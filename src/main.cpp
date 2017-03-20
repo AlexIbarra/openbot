@@ -13,7 +13,7 @@ int main( void ) {
     int iLowH = 170;
     int iHighH = 179;
 
-    int iLowS = 50; //150 estaba
+    int iLowS = 80; //50 si hay mucha luz de sol
     int iHighS = 255;
 
     int iLowV = 60;
@@ -33,9 +33,9 @@ int main( void ) {
             cam->captura();
             x = cam->getX();
             y = cam->getY();
-            if(moviAnte == 0 && y>=440   && x > 270 && x < 380 ){
-				avanza();
-				usleep(12000000);
+            if(moviAnte == -1 && y>=440   && x > 270 && x < 380 ){
+				avanzaLento();
+				usleep(7000000);
 				parar();
 				cout << "Encontrado" << endl;
 				encontrado = true;

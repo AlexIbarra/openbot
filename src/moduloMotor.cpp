@@ -33,19 +33,19 @@ void retroceder(){
     pwmWrite(pwmMotorI, 312); 
 }
 void avanza(){
-    pwmWrite(pwmMotorD, 300);
-    pwmWrite(pwmMotorI, 328); 
+    pwmWrite(pwmMotorD, 305);
+    pwmWrite(pwmMotorI, 334); 
 }
 void avanzaLento(){
-    pwmWrite(pwmMotorD, 313);
-    pwmWrite(pwmMotorI, 326); 
+    pwmWrite(pwmMotorD, 317);
+    pwmWrite(pwmMotorI, 322); 
 }
 void rotaIzq(){
-    pwmWrite(pwmMotorD, 310);
-    pwmWrite(pwmMotorI, 310); 
+    pwmWrite(pwmMotorD, 317);
+    pwmWrite(pwmMotorI, 317); 
 }
 void rotaDcha(){
-    pwmWrite(pwmMotorD, 328);
-    pwmWrite(pwmMotorI, 328);
+    pwmWrite(pwmMotorD, 322);
+    pwmWrite(pwmMotorI, 322);
    
 }
