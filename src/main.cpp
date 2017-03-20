@@ -1,5 +1,7 @@
 #include <unistd.h>
 #include <iostream>
+#include <queue>
+#include <pthread.h>
 #include "moduloMotor.h"
 #include "moduloCamara.h"
 #include "moduloCentral.h"
@@ -23,15 +25,26 @@ int main( void ) {
     
     Camara * cam = new Camara(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV);
     initMotores();
-   // cam->initCamara();
-    int x,y, moviAnte = -1;
+
+    int x,y, rc, moviAnte = -1;
+    
+    pthread_t thread = 1;
+    queue<t_Coordenada> cola;
+    
     try {
         
        // Broker * brk = new Broker ("broker", "brk_1", "127.0.0.1", 1883);
+       //cam->captura();
+       rc = pthread_create(&thread, NULL, captura, (void *)&cola);
+       
+		cout << "Cola X= " << cola.front().pos_x << endl;
+		cout << "Cola Y= " << cola.front().pos_y << endl;
+            
+		cola.pop();
         
         while(!encontrado) {
-            cam->captura();
-            x = cam->getX();
+            //cam->captura();
+            /*x = cam->getX();
             y = cam->getY();
             if(moviAnte == -1 && y>=440   && x > 270 && x < 380 ){
 				avanzaLento();
@@ -40,7 +53,7 @@ int main( void ) {
 				cout << "Encontrado" << endl;
 				encontrado = true;
 			}else
-                 moviAnte = run(x,y, moviAnte);
+                 moviAnte = run(x,y, moviAnte);*/
         }
     
     } catch (const exception& e){					/// if exception occured in constructor. see class declaration.

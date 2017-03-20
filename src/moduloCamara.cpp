@@ -3,6 +3,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "moduloCamara.h"
 #include <stdio.h>
+#include <queue>
 
 using namespace cv;
 using namespace std;
@@ -32,25 +33,21 @@ int Camara::getY() {
     return y;
 }
 
-void Camara::initCamara() {
-
-    namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
-    
-
-    //Create trackbars in "Control" window
-    createTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
-    createTrackbar("HighH", "Control", &iHighH, 179);
-
-    createTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
-    createTrackbar("HighS", "Control", &iHighS, 255);
-
-    createTrackbar("LowV", "Control", &iLowV, 255);//Value (0 - 255)
-    createTrackbar("HighV", "Control", &iHighV, 255);
-    
-}
-
 //Las inicializamos en el punto medio de la pantalla, para que no se muevan los motores de inicio
-void Camara::captura(){
+void *captura(void *thread_cola) {
+	
+	queue<t_Coordenada> *cola = (queue<t_Coordenada> *)thread_cola;
+	t_Coordenada coordenada;
+	
+	int iLowH = 170;
+    int iHighH = 179;
+
+    int iLowS = 80; //50 si hay mucha luz de sol
+    int iHighS = 255;
+
+    int iLowV = 60;
+    int iHighV = 255;
+	
     VideoCapture cap(0); //capture the video from webcam
 
     if ( !cap.isOpened() )  // if not success, exit program
@@ -73,7 +70,7 @@ void Camara::captura(){
     Mat imgLines = Mat::zeros( imgTmp.size(), CV_8UC3 );;
  
 
-  while (true) {
+  //while (true) {
         Mat imgOriginal;
         bool bSuccess = cap.read(imgOriginal); // read a new frame from video
 
@@ -128,11 +125,21 @@ void Camara::captura(){
             iLastX = posX;
             iLastY = posY;
 
-            x = posX;
-            y = posY;
+            //x = posX;
+            //y = posY;
+            coordenada.pos_x = posX;
+            coordenada.pos_y = posY;
+            
+            cola->push(coordenada);
+            
+            /*cout << "Cola X= " << cola->front().pos_x << endl;
+            cout << "Cola Y= " << cola->front().pos_y << endl;
+            
+            cola->pop();*/
+            
             //cout << "x " << x << endl;
             //cout << "y " << y << endl;
-            break;
+            //k;
         }
 
         //imshow("Thresholded Image", imgThresholded); //show the thresholded image
@@ -140,10 +147,6 @@ void Camara::captura(){
         //imgOriginal = imgOriginal + imgLines;
         //imshow("Original", imgOriginal); //show the original image
 
-        if (waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
-        {
-            cout << "esc key is pressed by user" << endl;
-           //break; 
-        }
-  }
+	pthread_exit(NULL);
+  //}// fin while
 }

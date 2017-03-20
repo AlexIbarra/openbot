@@ -15,11 +15,17 @@ private:
 public:
     Camara();
     Camara(int ilowh, int ihighh, int ilows, int isighs, int ilowv, int ihighv);
-    void initCamara();
     int getX();
     int getY();
-    void captura();
+    //void *captura(void *thread_cola);
 };
+
+void *captura(void *thread_cola);
+
+typedef struct {
+	int pos_x;
+	int pos_y;
+} t_Coordenada;
 
 #endif /* MODULOCAMARA_H */
 
