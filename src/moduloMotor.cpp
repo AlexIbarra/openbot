@@ -37,7 +37,7 @@ void avanza(){
     pwmWrite(pwmMotorI, 323); 
 }
 void trayectoriaIzq(){
-    pwmWrite(pwmMotorD, 318);
+    pwmWrite(pwmMotorD, 317);
     pwmWrite(pwmMotorI, 321); 
 }
 void trayectoriaDer(){

@@ -39,7 +39,7 @@ int main( void ) {
        rc = pthread_create(&thread, NULL, captura, (void *)&coordenada);
        	
        	while(coordenada.pos_x == -1 && coordenada.pos_x == -1) {sleep(1);}
-        
+       	        
         while(estado != st_encontrado) {
 			
             x = coordenada.pos_x;

@@ -5,18 +5,20 @@
 #include "moduloBroker.h"
 #include "moduloCentral.h"
 
+#define DEBUG 0
+
 int calculaEstado( int x, int y, int ultSt) {
-	if(y>=440 && x >= 270 && x <= 380){
+	if(y>=440 && x >= 100 && x <= 540){
 		return st_encontrado;
-	}else if (x >= 0 && x < 245){
+	}else if (x >= 0 && x < 100){
 		return st_izq;
-	}else if (x >=245 && x < 295){
+	}else if (x >=100 && x < 250){
 		return st_trayizq;
-	}else if (x >=295 && x <= 345){
+	}else if (x >=200 && x <= 390){
 		return st_recto;
-	}else if (x > 345 && x <= 395){
+	}else if (x > 390 && x <= 540){
 		return st_trayder;
-	}else if (x > 395 && x <= 640){
+	}else if (x > 540 && x <= 640){
 		return st_der;
 	}else if (x == -1 && y == -1 && ultSt != st_inicial){
 		return st_perdido;
@@ -29,38 +31,51 @@ void ejecuta( int st){
 	switch(st){
 		case st_inicial:
 			//cout << "Inicial" << endl;
-			cout << "|_____| |_____|" << endl;
+			if (DEBUG)
+				cout << "|_____| |_____|" << endl;
 			rotaIzq();
 			break;
 		case st_izq:
 			//cout << "Rota Izquierda" << endl;
-			cout << "|·____| |_____|" << endl;
+			if (DEBUG)
+				cout << "|·____| |_____|" << endl;
 			rotaIzq();
 			break;
 		case st_trayizq:
 			//cout << "Trayectoria Izquierda" << endl;
-			cout << "|____·| |_____|" << endl;
+			if (DEBUG)
+				cout << "|____·| |_____|" << endl;
 			trayectoriaIzq();
 			break;
 		case st_recto:
 			//cout << "Recto" << endl;
-			cout << "|_____|·|_____|" << endl;
-			avanzaLento();
+			if (DEBUG)
+				cout << "|_____|·|_____|" << endl;
+			avanza();
 			break;
 		case st_trayder:
 			//cout << "Trayectoria Derecha" << endl;
-			cout << "|_____| |·____|" << endl;
+			if (DEBUG)
+				cout << "|_____| |·____|" << endl;
 			trayectoriaDer();
 			break;
 		case st_der:
 			//cout << "Rota Derecha" << endl;
-			cout << "|_____| |____·|" << endl;
+			if (DEBUG)
+				cout << "|_____| |____·|" << endl;
 			rotaDcha();
 			break;
 		case st_encontrado:
-			cout << "Encontrado" << endl;
+			if (DEBUG)
+				cout << "Encontrado" << endl;
 			avanza();
 			usleep(5000000);
+			for(int i=0; i<5; i++){
+				rotaDcha();
+				usleep(350000);
+				rotaIzq();
+				usleep(350000);
+			}
 			parar();
 			break;
 	}
@@ -70,12 +85,14 @@ int run( int x, int y, int ultSt, int ultX, int ultY) {
 	
 	int estado, ultimo;
     
-    cout << "X " << x << "\tY " << y << endl;
+    if (DEBUG)
+		cout << "X " << x << "\tY " << y << endl;
     
     estado = calculaEstado(x, y, ultSt);
     
 	if(estado == st_perdido){
-		cout << "Perdido\t";
+		if (DEBUG)
+			cout << "Perdido\t";
 		ultimo = calculaEstado(ultX, ultY, ultSt);
 		ejecuta(ultimo);
 	}else

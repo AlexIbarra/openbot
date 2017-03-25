@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <iostream>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -7,6 +8,8 @@
 
 using namespace cv;
 using namespace std;
+
+#define DEBUG 0
 
 Camara::Camara() {
     x = 0;
@@ -109,14 +112,15 @@ cout << "Antes de while" << endl;
             dimensFoto++;
         }
         
-        cout << "dArea: " << dArea << endl;
+        if (DEBUG)
+			cout << "dArea: " << dArea << endl;
 
         // if the area <= 10000, I consider that the there are no object in the image and it's because of the noise, the area is not zero 
         if (dArea > 10000) {
             //calculate the position of the ball
             int posX = dM10 / dArea;
             int posY = dM01 / dArea;
-
+			
             /*if (iLastX >= 0 && iLastY >= 0 && posX >= 0 && posY >= 0)
             {
                 //Draw a red line from the previous point to the current point
@@ -134,6 +138,8 @@ cout << "Antes de while" << endl;
 			coordenada->pos_x = -1;
 			coordenada->pos_y = -1;
 		}
+
+		//sleep(1);
 
         //imshow("Thresholded Image", imgThresholded); //show the thresholded image
 
