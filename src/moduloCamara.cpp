@@ -35,9 +35,8 @@ int Camara::getY() {
 
 //Las inicializamos en el punto medio de la pantalla, para que no se muevan los motores de inicio
 void *captura(void *thread_cola) {
-	
-	queue<t_Coordenada> *cola = (queue<t_Coordenada> *)thread_cola;
-	t_Coordenada coordenada;
+
+	t_Coordenada *coordenada = (t_Coordenada *)thread_cola;
 	
 	int iLowH = 170;
     int iHighH = 179;
@@ -69,8 +68,8 @@ void *captura(void *thread_cola) {
     //Create a black image with the size as the camera output
     Mat imgLines = Mat::zeros( imgTmp.size(), CV_8UC3 );;
  
-
-  //while (true) {
+cout << "Antes de while" << endl;
+  while (true) {
         Mat imgOriginal;
         bool bSuccess = cap.read(imgOriginal); // read a new frame from video
 
@@ -109,6 +108,8 @@ void *captura(void *thread_cola) {
             line(imgLines, Point(cols/2, iLastY), Point(cols/2, rows), Scalar(0,0,255), 2);
             dimensFoto++;
         }
+        
+        cout << "dArea: " << dArea << endl;
 
         // if the area <= 10000, I consider that the there are no object in the image and it's because of the noise, the area is not zero 
         if (dArea > 10000) {
@@ -125,28 +126,21 @@ void *captura(void *thread_cola) {
             iLastX = posX;
             iLastY = posY;
 
-            //x = posX;
-            //y = posY;
-            coordenada.pos_x = posX;
-            coordenada.pos_y = posY;
+            coordenada->pos_x = posX;
+            coordenada->pos_y = posY;
             
-            cola->push(coordenada);
-            
-            /*cout << "Cola X= " << cola->front().pos_x << endl;
-            cout << "Cola Y= " << cola->front().pos_y << endl;
-            
-            cola->pop();*/
-            
-            //cout << "x " << x << endl;
-            //cout << "y " << y << endl;
-            //k;
         }
+        else{
+			coordenada->pos_x = -1;
+			coordenada->pos_y = -1;
+		}
 
         //imshow("Thresholded Image", imgThresholded); //show the thresholded image
 
         //imgOriginal = imgOriginal + imgLines;
         //imshow("Original", imgOriginal); //show the original image
 
-	pthread_exit(NULL);
-  //}// fin while
+	
+  }// fin while
+  pthread_exit(NULL);
 }

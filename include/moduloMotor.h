@@ -24,3 +24,7 @@ void avanzaLento();
 void rotaIzq();
 
 void rotaDcha();
+
+void trayectoriaIzq();
+
+void trayectoriaDer();
