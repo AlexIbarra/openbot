@@ -1,6 +1,8 @@
 #ifndef MODULOCAMARA_H
 #define MODULOCAMARA_H
 
+#include "Object.h"
+
 class Camara {
 private:
     int x;
@@ -21,6 +23,8 @@ public:
 };
 
 void *captura(void *thread_cola);
+void equalize();
+void detectMultiObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFeed);
 
 typedef struct {
 	int pos_x;

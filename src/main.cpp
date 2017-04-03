@@ -6,8 +6,59 @@
 #include "moduloCamara.h"
 #include "moduloCentral.h"
 #include "moduloBroker.h"
+#include "Object.h"
 
 using namespace std;
+
+const string windowName = "Original Image";
+const string windowName1 = "HSV Image";
+const string windowName2 = "Thresholded Image";
+const string windowName3 = "After Morphological Operations";
+
+
+void testMultiObject() {
+    
+    //Matrix to store each frame of the webcam feed
+    Mat cameraFeed;
+    Mat threshold;
+    Mat HSV;
+    
+    //video capture object to acquire webcam feed
+    VideoCapture capture;
+    //open capture object at location zero (default location for webcam)
+    capture.open(0);
+    
+    while(true) {
+        //store image to matrix
+        capture.read(cameraFeed);
+
+        //convert frame from BGR to HSV colorspace
+        cvtColor(cameraFeed,HSV,COLOR_BGR2HSV);
+        
+        Object red("red");
+        
+        //first find red objects
+        cvtColor(cameraFeed,HSV,COLOR_BGR2HSV);
+        inRange(HSV,red.getHSVmin(),red.getHSVmax(),threshold);
+        
+        //morphological opening (removes small objects from the foreground)
+        erode( threshold, threshold, getStructuringElement( MORPH_ELLIPSE, Size(5, 5) ) );
+        dilate( threshold, threshold, getStructuringElement( MORPH_ELLIPSE, Size(5, 5) ) ); 
+
+        //morphological closing (removes small holes from the foreground)
+        dilate( threshold, threshold, getStructuringElement( MORPH_ELLIPSE, Size(5, 5) ) ); 
+        erode( threshold, threshold, getStructuringElement( MORPH_ELLIPSE, Size(5, 5) ) );
+        
+        detectMultiObject(red,threshold,HSV,cameraFeed);
+        
+        imshow(windowName,cameraFeed);
+        imshow(windowName1,HSV);
+
+        //delay 30ms so that screen can refresh.
+        //image will not appear without this waitKey() command
+        waitKey(30);
+    }
+}
 
 
 int main( void ) {
@@ -32,11 +83,15 @@ int main( void ) {
     //queue<t_Coordenada> cola;
     t_Coordenada coordenada;
     
+//    testMultiObject();
+    
+//    equalize();
+    
     try {
         
        // Broker * brk = new Broker ("broker", "brk_1", "127.0.0.1", 1883);
 
-       rc = pthread_create(&thread, NULL, captura, (void *)&coordenada);
+        rc = pthread_create(&thread, NULL, captura, (void *)&coordenada);
        	
        	while(coordenada.pos_x == -1 && coordenada.pos_x == -1) {sleep(1);}
        	        
@@ -64,9 +119,8 @@ int main( void ) {
                 
         }
     
-    } catch (const exception& e){					/// if exception occured in constructor. see class declaration.
-        cerr << "Error on Network Connection.\n" \
-            << "Check mosquitto is running & IP/PORT\n";
+    } catch (const exception& e) {
+        cerr << "Error on Network Connection.\n" << "Check mosquitto is running & IP/PORT\n";
     }
     
 
