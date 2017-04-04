@@ -23,8 +23,11 @@ public:
 };
 
 void *captura(void *thread_cola);
-void equalize();
+void equalizeHistogram(Mat threshold, Mat &equalized);
 void detectMultiObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFeed);
+void thresholdOtsu(Mat threshold, Mat &otsu);
+void applyOpening(Mat &threshold, int obj_radius = 2);
+void applyClosing(Mat &threshold, int obj_radius = 2);
 
 typedef struct {
 	int pos_x;

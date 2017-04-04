@@ -45,8 +45,8 @@ int Camara::getY() {
     return y;
 }
 
-void equalize() {
-    namedWindow("Original Image", CV_WINDOW_AUTOSIZE);
+void equalizeHistogram(Mat threshold, Mat &equalized) {
+    /*namedWindow("Original Image", CV_WINDOW_AUTOSIZE);
     namedWindow("Histogram Equalized", CV_WINDOW_AUTOSIZE);
     
     VideoCapture cap(0); //capture the video from webcam
@@ -81,7 +81,60 @@ void equalize() {
     
     waitKey(0); //wait for key press
 
-    destroyAllWindows(); //destroy all open windows
+    destroyAllWindows(); //destroy all open windows*/
+    
+    /********* Ecualizacion de histograma *********/
+    vector<Mat> channels;
+	// Cambiamos el formato de color (BGR a YCrCb)
+	cvtColor(threshold, equalized, CV_BGR2YCrCb);
+	
+	// Dividimos los canales de la imagen ecualizada en un vector
+	split(equalized,channels);
+	
+	// Realizamos la ecualizacion del canal 0 (Y)
+	equalizeHist(channels[0], channels[0]);
+	
+	// Volvemos a juntar los canales (ecualizado Y)
+	merge(channels,equalized);
+	
+	// Volvemos a cambiar el formato de color para que se pueda mostrar correctamente (YCrCb a BGR)
+	cvtColor(equalized, equalized, CV_YCrCb2BGR);
+	/*********************************************/   
+}
+
+void thresholdOtsu(Mat threshold, Mat &otsu) {
+	Mat imgGray;
+	
+	/******** Aplicamos filtro Otsu ********/
+	// TODO: Investigar por que peta al compilar
+	//cvtColor(threshold, imgGray, CV_BGR2GRAY);
+	//threshold(imgGray, otsu, 127, 255, THRESH_BINARY | THRESH_OTSU);
+	//cvtColor(otsu, otsu, CV_GRAY2BGR);
+	/**************************************/
+}
+
+//morphological opening (removes small objects from the foreground)
+void applyOpening(Mat &threshold, int obj_radius) {
+	int obj_type = MORPH_ELLIPSE;
+	
+	Mat object = getStructuringElement( obj_type, Size(2*obj_radius + 1, 2*obj_radius+1), Point( obj_radius, obj_radius ) );
+	
+	erode(threshold, threshold, object, Point(-1, -1), 2 );
+	dilate( threshold, threshold, object, Point(-1, -1), 2 );
+	//erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+	//dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+}
+
+//morphological closing (removes small holes from the foreground)
+void applyClosing(Mat &threshold, int obj_radius) {
+	int obj_type = MORPH_ELLIPSE;
+	
+	Mat object = getStructuringElement( obj_type, Size(2*obj_radius + 1, 2*obj_radius+1), Point( obj_radius, obj_radius ) );
+	
+	dilate( threshold, threshold, object, Point(-1, -1), 2 ); 
+	erode( threshold, threshold, object, Point(-1, -1), 2  );
+	//dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+	//erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
 }
 
 void detectMultiObject(Object theObject,Mat threshold,Mat HSV, Mat &cameraFeed) {
@@ -99,6 +152,7 @@ void detectMultiObject(Object theObject,Mat threshold,Mat HSV, Mat &cameraFeed) 
         
     double refArea = 0;
     bool objectFound = false;
+    Object object;
     
     if (hierarchy.size() > 0) {
         
@@ -116,8 +170,6 @@ void detectMultiObject(Object theObject,Mat threshold,Mat HSV, Mat &cameraFeed) 
                 //iteration and compare it to the area in the next iteration.
                 if(area > MIN_OBJECT_AREA){
 
-                    Object object;
-
                     object.setXPos(moment.m10/area);
                     object.setYPos(moment.m01/area);
                     object.setType(theObject.getType());
@@ -126,16 +178,12 @@ void detectMultiObject(Object theObject,Mat threshold,Mat HSV, Mat &cameraFeed) 
                     objects.push_back(object);
 
                     objectFound = true;
+                    circle(cameraFeed, Point(object.getXPos(), object.getYPos()), 10, Scalar(255, 0, 0));
                 }
                 else {
                     objectFound = false;
                 }
-            }
-            
-//            if(objectFound ==true){//let user know you found an object                
-//                drawObject(objects,cameraFeed,temp,contours,hierarchy);//draw object location on screen
-//            }
-
+            }            
         }
         else {
             putText(cameraFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
@@ -163,7 +211,9 @@ void *captura(void *thread_cola) {
         cout << "Cannot open the web cam" << endl;
     }
 
-    //namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+    /*namedWindow("Thresholded Image", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+    namedWindow("Original", CV_WINDOW_AUTOSIZE);*/
+    
     int dimensFoto = 0;
 
     int iLastX = -1; 
@@ -176,31 +226,50 @@ void *captura(void *thread_cola) {
     //Create a black image with the size as the camera output
     Mat imgLines = Mat::zeros( imgTmp.size(), CV_8UC3 );
  
-    if (DEBUG)
+    if (DEBUG == 2)
         cout << "Antes de while" << endl;
     
     while (true) {
-        Mat imgOriginal;
+        Mat imgOriginal, imgEqu, imgHSV, imgThresholded, imgOtsu, imgGray;
+		vector<Mat> channels; 
         bool bSuccess = cap.read(imgOriginal); // read a new frame from video
 
          if (!bSuccess) { //if not success, break loop
             cout << "Cannot read a frame from video stream" << endl;
-        }		
+        }                              		
+        		              
+        
+        if (DEBUG == 2)
+			cout << "Antes de la ecualizacion de histograma" << endl;
+        
+        /******* Ecualizacion de histograma ********/
+		equalizeHistogram(imgOriginal, imgEqu);
+		
+		
+		if (DEBUG == 2)
+			cout << "Antes del filtrado Otsu" << endl;
 	
-        Mat imgHSV;
-        cvtColor(imgOriginal, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
-        Mat imgThresholded;
-        inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
-      
-        //morphological opening (removes small objects from the foreground)
-        erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-        dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+		/******** Aplicamos filtro Otsu ********/
+		cvtColor(imgEqu, imgGray, CV_BGR2GRAY);
+		threshold(imgGray, imgOtsu, 127, 255, THRESH_BINARY | THRESH_OTSU);
+		cvtColor(imgOtsu, imgOtsu, CV_GRAY2BGR);
+		/**************************************/
+		
+		
+		/************ Aplicamos filtrado a la imagen *************/			
+        cvtColor(imgEqu, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
+        
+        inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image     
+        
+        applyOpening(imgThresholded, 2);
+        
+        applyClosing(imgThresholded, 2);       
+        /**********************************************************/
 
-        //morphological closing (removes small holes from the foreground)
-        dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
-        erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+		if (DEBUG == 2)
+			cout << "Antes de calcular los momentos " << endl;
 
-        //Calculate the moments of the thresholded image
+		/******* Calculo del area del objeto ********/
         Moments oMoments = moments(imgThresholded);
 
         double dM01 = oMoments.m01;
@@ -244,6 +313,8 @@ void *captura(void *thread_cola) {
 
         //imgOriginal = imgOriginal + imgLines;
         //imshow("Original", imgOriginal); //show the original image
+        
+        //waitKey(0); //wait for key press
         
   }// fin while
     

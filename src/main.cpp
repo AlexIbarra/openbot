@@ -42,17 +42,15 @@ void testMultiObject() {
         inRange(HSV,red.getHSVmin(),red.getHSVmax(),threshold);
         
         //morphological opening (removes small objects from the foreground)
-        erode( threshold, threshold, getStructuringElement( MORPH_ELLIPSE, Size(5, 5) ) );
-        dilate( threshold, threshold, getStructuringElement( MORPH_ELLIPSE, Size(5, 5) ) ); 
+        applyOpening(threshold, 2);
 
         //morphological closing (removes small holes from the foreground)
-        dilate( threshold, threshold, getStructuringElement( MORPH_ELLIPSE, Size(5, 5) ) ); 
-        erode( threshold, threshold, getStructuringElement( MORPH_ELLIPSE, Size(5, 5) ) );
+        applyClosing(threshold, 2);
         
         detectMultiObject(red,threshold,HSV,cameraFeed);
         
         imshow(windowName,cameraFeed);
-        imshow(windowName1,HSV);
+        //imshow(windowName1,HSV);
 
         //delay 30ms so that screen can refresh.
         //image will not appear without this waitKey() command
@@ -83,9 +81,10 @@ int main( void ) {
     //queue<t_Coordenada> cola;
     t_Coordenada coordenada;
     
-//    testMultiObject();
-    
-//    equalize();
+    //testMultiObject();    
+    //equalize();
+	//captura((void *)&coordenada);
+
     
     try {
         
