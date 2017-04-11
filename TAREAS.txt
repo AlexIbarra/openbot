@@ -1,0 +1,14 @@
+TAREAS
+- Cuadrícula y foto 
+- Establecer estructura de datos donde guardar la cuadrícula
+- Función que dados x e y en px nos devuelva un x e y en cm
+- Función que dados dos puntos (cm) nos devuelva una distancia entre ellos
+- Calibración de los motores para que gire sobre sí mismo y establecer el radio de giro de la cámara
+- Función que dados 3 puntos (origen, actual, destino) saque el ángulo de giro para orientarse hacia el destino
+- Hacer a ordenador la "diana" con blanco y negro para los encoder
+- Averiguar el paso con cada división de la rueda (con el ángulo de las divisiones se saca la longiud del arco)
+- Calibrar con encoders para saber qué ángulo gira con cada paso
+- Máquina de estados "definitiva" -> función de buscar objetivos (en tandas de xº)
+- Como va mapa global al detectar puntos
+- Algoritmo de caminos mínimos para sacer lista o cola con objetivos
+- Montar encoders

@@ -6,9 +6,9 @@
 #include "moduloCamara.h"
 #include "moduloCentral.h"
 #include "moduloBroker.h"
+#include "moduloEncoder.h"
 
 using namespace std;
-
 
 int main( void ) {
     
@@ -25,45 +25,56 @@ int main( void ) {
     
     Camara * cam = new Camara(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV);
     initMotores();
+    initDecoders();
 
-    int x, y, ultX=-1, ultY=-1, rc, moviAnte = -1, estado = st_inicial;
+    int x, y, ultX=-1, ultY=-1, rc, moviAnte = -1, estado = st_inicial, decI, decD;
     
-    pthread_t thread = 1;
+    int numObjetivos = 0, totalObjetivos = 0;
+
+    pthread_t thread1 = 1, thread2, thread3;
     //queue<t_Coordenada> cola;
     t_Coordenada coordenada;
+    t_Decoder datosDecIzq, datosDecDer;
+
+    datosDecDer.enable = datosDecIzq.enable = 0;
     
     try {
         
-       // Broker * brk = new Broker ("broker", "brk_1", "127.0.0.1", 1883);
+        // Broker * brk = new Broker ("broker", "brk_1", "127.0.0.1", 1883);
 
-       rc = pthread_create(&thread, NULL, captura, (void *)&coordenada);
+        rc = pthread_create(&thread1, NULL, captura, (void *)&coordenada);
+
+        decI = pthread_create(&thread2, NULL, cuentaIzq, (void *)&datosDecIzq);
+
+        decD = pthread_create(&thread3, NULL, cuentaDer, (void *)&datosDecDer);
        	
        	while(coordenada.pos_x == -1 && coordenada.pos_x == -1) {sleep(1);}
        	        
-        while(estado != st_encontrado) {
+        while(1) {
 			
             x = coordenada.pos_x;
             y = coordenada.pos_y;
             
             if(coordenada.pos_x == -1 && coordenada.pos_x == -1) {sleep(1);}
             
-            estado = run(x, y, estado, ultX, ultY);
+            if(estado == st_inicial){
+                estado = busca(x, y, totalObjetivos);
+            }else{
+                estado = run(x, y, estado, ultX, ultY);
             
-            if (estado != st_perdido){
-				ultX = x;
-				ultY = y;
-			}
-            /*if(moviAnte == -1 && y>=440   && x > 270 && x < 380 ){
-				avanza();
-				usleep(5000000);
-				parar();
-				cout << "Encontrado" << endl;
-				encontrado = true;
-			}else
-                 moviAnte = run(x,y, moviAnte);*/
-                
+                if (estado != st_perdido){
+    				ultX = x;
+    				ultY = y;
+    			}
+
+                if(estado == st_encontrado){                
+                    numObjetivos++;   
+                }else if(estado == st_inicial && numObjetivos == totalObjetivos){
+                    numObjetivos = totalObjetivos = 0;
+                }
+            }
         }
-    
+
     } catch (const exception& e){					/// if exception occured in constructor. see class declaration.
         cerr << "Error on Network Connection.\n" \
             << "Check mosquitto is running & IP/PORT\n";

@@ -9,13 +9,15 @@
 #define st_recto 5
 #define st_encontrado 6
 #define st_perdido 7
+#define st_localiza 8
 
-int calculaEstado( int x, int y, int ultSt);
+int obtenerAngulo(int x1, int y1, int x2, int y2, int x3, int y3);
 
-void ejecuta( int st);
+int calculaEstado( int x, int y, int ultSt, int numObjetivos, int totalObjetivos);
 
-int run( int x, int y, int ultSt, int ultX, int ultY);
+int ejecuta( int st);
 
+int run( int x, int y, int ultSt, int ultX, int ultY, int numObjetivos, int & totalObjetivos);
 
-#endif /* MODULOBROKER_H */
+#endif
 
