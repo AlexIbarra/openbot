@@ -5,7 +5,8 @@ OBJDIR = $(BASEDIR)/obj
 BINDIR = $(BASEDIR)/bin
 INCDIR = $(BASEDIR)/include
 SRCDIR = $(BASEDIR)/src
-LIBS=`pkg-config --libs opencv` -lwiringPi -lmosquitto -lmosquittopp
+TESTSDIR = $(BASEDIR)/tests
+LIBS=`pkg-config --libs opencv` -lwiringPi -lmosquitto -lmosquittopp -lpthread
 EXEC = openbot
 
 all: $(EXEC)
@@ -27,6 +28,17 @@ $(OBJDIR)/moduloCamara.o: $(SRCDIR)/moduloCamara.cpp
 		
 $(OBJDIR)/moduloCentral.o: $(SRCDIR)/moduloCentral.cpp
 	$(CC) $(CFLAGS) -o $(OBJDIR)/moduloCentral.o $(SRCDIR)/moduloCentral.cpp -I$(INCDIR)
+	
+test:
+	
+testMosqReader: $(OBJDIR)/testMosqReader.o $(OBJDIR)/moduloBroker.o
+	$(CC) $(OBJDIR)/testMosqReader.o $(OBJDIR)/moduloBroker.o -o $(TESTSDIR)/bin/testMosqReader $(LIBS)
+
+$(OBJDIR)/testMosqReader.o: $(TESTSDIR)/testMosqReader.cpp
+	$(CC) $(CFLAGS) -o $(OBJDIR)/testMosqReader.o $(TESTSDIR)/testMosqReader.cpp -I$(INCDIR)
+	
+$(OBJDIR)/testMosqPublisher.o: $(TESTSDIR)/testMosqPublisher.cpp
+	$(CC) $(CFLAGS) -o $(OBJDIR)/testMosqPublisher.o $(TESTSDIR)/testMosqPublisher.cpp -I$(INCDIR)
 
 .PHONY:clean
 clean: 
