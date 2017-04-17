@@ -1,6 +1,3 @@
-#ifndef MODULODECODER_H
-#define MODULODECODER_H
-
 #include <stdio.h>
 #include <unistd.h>
 #include <iostream>
@@ -13,21 +10,50 @@
 
 #define DEBUG 0
 
-void initDecoders(){
-	pinMode (dec_izq, INPUT) ;
-	pinMode (dec_der, INPUT) ;
-	pullUpDnControl(dec_izq, PUD_UP);
-    pullUpDnControl(dec_der, PUD_UP);
+void initEncoders(){
+	pinMode (enc_izq, INPUT) ;
+	pinMode (enc_der, INPUT) ;
+	pullUpDnControl(enc_izq, PUD_UP);
+    pullUpDnControl(enc_der, PUD_UP);
+}
+
+void *anguloIzq(void *thread_data){
+	t_Encoder *enc = (t_Encoder *)thread_data;
+	int angulo = 0;
+	enc->fin = 0;
+	while(angulo < enc->angulo){
+		while(digitalRead(enc_izq) == 0);
+		while(digitalRead(enc_izq) == 1);
+		angulo += anguloXpaso;
+	}
+	enc->fin = 1;
+	
+	pthread_exit(NULL);
+}
+
+void *anguloIzq(void *thread_data){
+	t_Encoder *enc = (t_Encoder *)thread_data;
+	int angulo = 0;
+	enc->fin = 0;
+	while(angulo < enc->angulo){
+		while(digitalRead(enc_der) == 0);
+		while(digitalRead(enc_der) == 1);
+		angulo += anguloXpaso;
+	}
+	enc->fin = 1;
+	
+	pthread_exit(NULL);
 }
 
 void *cuentaIzqe(void *thread_data){
-	t_Decoder *dec = (t_Decoder *)thread_data;
+	t_Encoder *enc = (t_Encoder *)thread_data;
 	while(1){
-		dec->distancia = 0;
-		while(dec->enable){
-			while(digitalRead(dec_izq) == 0);
-			while(digitalRead(dec_izq) == 1);
-			dec->distancia += paso;
+		enc->distancia = 0;
+		while(enc->enable){
+			while(digitalRead(enc_izq) == 0);
+			while(digitalRead(enc_izq) == 1);
+			enc->distancia += paso;
+			enc->angulo += anguloXpaso;
 		}
 	}
 
@@ -35,13 +61,13 @@ void *cuentaIzqe(void *thread_data){
 }
 
 void *cuentaDer(void *thread_data){
-	t_Decoder *dec = (t_Decoder *)thread_data;
+	t_Encoder *enc = (t_Encoder *)thread_data;
 	while(1){
-		dec->distancia = 0;
-		while(dec->enable){
-			while(digitalRead(dec_izq) == 0);
-			while(digitalRead(dec_izq) == 1);
-			dec->distancia += paso;
+		enc->distancia = 0;
+		while(enc->enable){
+			while(digitalRead(enc_der) == 0);
+			while(digitalRead(enc_der) == 1);
+			enc->distancia += paso;
 		}
 	}
 

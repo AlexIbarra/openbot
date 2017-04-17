@@ -9,10 +9,61 @@
 
 #define DEBUG 0
 
+tDireccion obtenerDireccionVector(int x, int y){
+    if (x==0)
+    	return y>0 ? arriba : abajo;
+    else{
+    	if (y==0)
+	    	return x>0 ? derecha : izquierda;
+	    else{
+	    	if(x>0)
+	    		return y>0 ? arribaDer : abajoDer;
+	    	else
+	    		return y>0 ? arribaIzq : abajoIzq;
+	    }
+    }
+}
+//Angulo de giro entre los dos vectores, 0A y AB
+//Angulo > 0 = Derecha
+//Angulo < 0 = Izquierda
 int obtenerAngulo(int x1, int y1, int x2, int y2, int x3, int y3){
-    double angulo, z, a1=x2-x1, a2=y2-y1, b1=x3-x2, b2=y3-y2;
+    double z; 
+    int a1=x2-x1, a2=y2-y1, b1=x3-x2, b2=y3-y2, signo;
+    tDireccion dirOA = obtenerDireccionVector(a1, a2);
+    if (dirOA == arriba)
+    	signo = x3 > x2 ? 1 : -1;
+    else if(dirOA == abajo)
+    	signo = x3 > x2 ? -1 : 1;
+    else{
+	    //ecuacion implicita recta - y = mx + b
+	    //m = pendiente recta OrigAct (recta1) y de sus paralelas
+	    //y - y3 = m*(x-x3) -> y = m*x - m1*x3 + y3
+	    int m = (y2-y1)/(x2-x1), bO = y1 - (x1*(y2-y1))/(x2-x1), bP = y3 - m*x3;
+		switch(dirOA){
+			case arribaIzq:
+				signo = bP > bO ? 1 : -1;
+				break;
+			case arribaDer:
+				signo = bP > bO ? -1 : 1;
+				break;
+			case derecha:
+				signo = bP > bO ? 1 : -1;
+				break;
+			case abajoDer:
+				signo = bP > bO ? -1 : 1;
+				break;
+			case abajoIzq:
+				signo = bP > bO ? 1 : -1;
+				break;
+			case izquierda:
+				signo = bP > bO ? -1 : 1;
+				break;
+		}
+	}
+
     z = (a1*b1+a2*b2)/(sqrt(a1*a1+a2*a2)*sqrt(b1*b1+b2*b2));
-    return acos(z) * 180 / PI;
+
+    return (acos(z) * 180 / PI) * signo;
 }
 
 int calculaEstado( int x, int y, int ultSt, int numObjetivos, int totalObjetivos) {

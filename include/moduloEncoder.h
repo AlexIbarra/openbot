@@ -1,16 +1,23 @@
-#ifndef MODULODECODER_H
-#define MODULODECODER_H
+#ifndef MODULOENCODER_H
+#define MODULOENCODER_H
 
-#define	dec_izq 5454
-#define	dec_der 5454
+#define	enc_izq 5454 //pin encoder izquierdo
+#define	enc_der 5454 //pin encoder derecho
 #define paso 5 //mm
+#define anguloXpaso 10 //grados
 
 struct{
 	int enable;
 	int distancia;
-}t_Decoder;
+	int angulo;
+	int fin;
+}t_Encoder;
 
-void initDecoders();
+void initEncoders();
+
+void *anguloIzq(void *thread_data);
+
+void *anguloDer(void *thread_data);
 
 void *cuentaIzq(void *thread_data);
 

@@ -10,6 +10,9 @@
 #define st_encontrado 6
 #define st_perdido 7
 #define st_localiza 8
+#define PI 3.14159265
+
+typedef enum tDireccion {arriba, abajo, izquierda, derecha, arribaDer, arribaIzq, abajoDer, abajoIzq};
 
 int obtenerAngulo(int x1, int y1, int x2, int y2, int x3, int y3);
 

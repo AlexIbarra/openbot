@@ -25,18 +25,18 @@ int main( void ) {
     
     Camara * cam = new Camara(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV);
     initMotores();
-    initDecoders();
+    initEncoders();
 
-    int x, y, ultX=-1, ultY=-1, rc, moviAnte = -1, estado = st_inicial, decI, decD;
+    int x, y, ultX=-1, ultY=-1, rc, moviAnte = -1, estado = st_inicial, encI, encD;
     
     int numObjetivos = 0, totalObjetivos = 0;
 
     pthread_t thread1 = 1, thread2, thread3;
     //queue<t_Coordenada> cola;
     t_Coordenada coordenada;
-    t_Decoder datosDecIzq, datosDecDer;
+    t_Encoder datosEncIzq, datosEncDer;
 
-    datosDecDer.enable = datosDecIzq.enable = 0;
+    datosEncDer.enable = datosEncIzq.enable = 0;
     
     try {
         
@@ -44,9 +44,9 @@ int main( void ) {
 
         rc = pthread_create(&thread1, NULL, captura, (void *)&coordenada);
 
-        decI = pthread_create(&thread2, NULL, cuentaIzq, (void *)&datosDecIzq);
+        encI = pthread_create(&thread2, NULL, cuentaIzq, (void *)&datosEncIzq);
 
-        decD = pthread_create(&thread3, NULL, cuentaDer, (void *)&datosDecDer);
+        encD = pthread_create(&thread3, NULL, cuentaDer, (void *)&datosEncDer);
        	
        	while(coordenada.pos_x == -1 && coordenada.pos_x == -1) {sleep(1);}
        	        
