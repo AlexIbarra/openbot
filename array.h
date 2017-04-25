@@ -71,73 +71,76 @@ array[4].yPixel = 472;
 array[4].xCm = 10;
 array[4].yCm = 20;
 
+/*----------------------------*/
 
+//Eje horizontal a 25 cm de la cámara
+array[5].xPixel = 99;
+array[5].yPixel = 397;
+array[5].xCm = -10;
+array[5].yCm = 25;
 
-array[5].xPixel = ;
-array[5].yPixel = ;
-array[5].xCm = 30;
-array[5].yCm = 5;
+array[6].xPixel = 204;
+array[6].yPixel = 397;
+array[6].xCm = -5;
+array[6].yCm = 25;
 
-array[6].xPixel = ;
-array[6].yPixel = ;
-array[6].xCm = 35;
-array[6].yCm = 5;
+array[7].xPixel = 311;
+array[7].yPixel = 397;
+array[7].xCm = 0;
+array[7].yCm = 25;
 
-array[7].xPixel = ;
-array[7].yPixel = ;
-array[7].xCm = 40;
-array[7].yCm = 5;
+array[8].xPixel = 419;
+array[8].yPixel = 397;
+array[8].xCm = 5;
+array[8].yCm = 25;
 
-array[8].xPixel = ;
-array[8].yPixel = ;
-array[8].xCm = 45;
-array[8].yCm = 5;
+array[9].xPixel = 524;
+array[9].yPixel = 397;
+array[9].xCm = 10;
+array[9].yCm = 25;
 
-array[9].xPixel = ;
-array[9].yPixel = ;
-array[9].xCm = 50;
-array[9].yCm = 5;
+array[10].xPixel = 629;
+array[10].yPixel = 397;
+array[10].xCm = 15;
+array[10].yCm = 25;
+/*----------------------------*/
 
-//EJE Y = 5 X < 0
-array[10].xPixel = ;
-array[10].yPixel = ;
-array[10].xCm = -5;
-array[10].yCm = 5;
+//Eje horizontal a 30 cm de la cámara
+array[11].xPixel = 35;
+array[11].yPixel = 339;
+array[11].xCm = -15; //Hay un pequeño error, lo ideal es 335
+array[11].yCm = 30;
 
-array[11].xPixel = ;
-array[11].yPixel = ;
-array[11].xCm = -10;
-array[11].yCm = 5;
+array[12].xPixel = 128;
+array[12].yPixel = 339;
+array[12].xCm = -10;
+array[12].yCm = 30;
 
-array[12].xPixel = ;
-array[12].yPixel = ;
-array[12].xCm = -15;
-array[12].yCm = 5;
+array[13].xPixel = 219;
+array[13].yPixel = 339;
+array[13].xCm = -5;
+array[13].yCm = 30;
 
-array[13].xPixel = ;
-array[13].yPixel = ;
-array[13].xCm = -20;
-array[13].yCm = 5;
+array[14].xPixel = 312;
+array[14].yPixel = 339;
+array[14].xCm = 0;
+array[14].yCm = 30;
 
-array[14].xPixel = ;
-array[14].yPixel = ;
-array[14].xCm = -25;
-array[14].yCm = 5;
-
-array[15].xPixel = ;
-array[15].yPixel = ;
-array[15].xCm = -30;
-array[15].yCm = 5;
+array[15].xPixel = 405;
+array[15].yPixel = 339
+array[15].xCm = 5;
+array[15].yCm = 30;
 
 array[16].xPixel = ;
-array[16].yPixel = ;
-array[16].xCm = -35;
-array[16].yCm = 5;
+array[16].yPixel = 339;
+array[16].xCm = 10;
+array[16].yCm = 30;
 
 array[17].xPixel = ;
-array[17].yPixel = ;
-array[17].xCm = -40;
-array[17].yCm = 5;
+array[17].yPixel = 339;
+array[17].xCm = 15;
+array[17].yCm = 30;
+/*----------------------------*/
 
 array[18].xPixel = ;
 array[18].yPixel = ;
