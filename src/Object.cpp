@@ -11,7 +11,7 @@ Object::Object(string name){
 
     setType(name);
 
-    if(name=="blue") {
+    /*if(name=="blue") {
 
         setHSVmin(Scalar(92,0,0));
         setHSVmax(Scalar(124,256,256));
@@ -34,7 +34,7 @@ Object::Object(string name){
 
         //BGR value for Yellow:
         setColor(Scalar(0,255,255));
-    }
+    }*/
     if(name=="red") {
         
         int iLowH = 170;
@@ -44,8 +44,8 @@ Object::Object(string name){
         int iLowV = 60;
         int iHighV = 255;
 
-        setHSVmin(Scalar(iLowH, iLowS, iLowV));
-        setHSVmax(Scalar(iHighH, iHighS, iHighV));
+        setHSVmin(iLowH, iLowS, iLowV);
+        setHSVmax(iHighH, iHighS, iHighV);
         
 //        setHSVmin(Scalar(0,200,0));
 //        setHSVmax(Scalar(19,255,255));
@@ -82,10 +82,10 @@ Scalar Object::getHSVmax(){
     return Object::HSVmax;
 }
 
-void Object::setHSVmin(Scalar min){
-    Object::HSVmin = min;
+void Object::setHSVmin(int hmin, int smin, int vmin){
+    Object::HSVmin = Scalar(hmin, smin, vmin);
 }
 
-void Object::setHSVmax(Scalar max){
-    Object::HSVmax = max;
+void Object::setHSVmax(int hmax, int smax, int vmax){
+    Object::HSVmax = Scalar(hmax, smax, vmax);
 }

@@ -6,19 +6,13 @@
 #include "moduloCamara.h"
 #include "Object.h"
 #include <stdio.h>
-#include <queue>
 #include <vector>
+#include <list>
 
 using namespace cv;
 using namespace std;
 
 #define DEBUG 1
-
-const int FRAME_WIDTH = 640;
-const int FRAME_HEIGHT = 480;
-const int MAX_NUM_OBJECTS=50;
-const int MIN_OBJECT_AREA = 20*20;
-const int MAX_OBJECT_AREA = FRAME_HEIGHT*FRAME_WIDTH/1.5;
 
 Camara::Camara() {
     x = 0;
@@ -45,44 +39,77 @@ int Camara::getY() {
     return y;
 }
 
-void equalizeHistogram(Mat threshold, Mat &equalized) {
-    /*namedWindow("Original Image", CV_WINDOW_AUTOSIZE);
-    namedWindow("Histogram Equalized", CV_WINDOW_AUTOSIZE);
-    
-    VideoCapture cap(0); //capture the video from webcam
+void onMouse(int event, int x, int y, int flags, void * params) {
+	
+	t_Rectangle * rectData = (t_Rectangle *)params;
+	
+	if(event == CV_EVENT_LBUTTONDOWN) { // se pulsa el boton izquierdo
+		rectData->initialClickPoint = Point(x, y);
+		//rectData->rectangleSelected = false;
+	}
+	else if(event == CV_EVENT_MOUSEMOVE) { // se mueve el raton
+		rectData->currentMousePoint = Point(x, y);
+		//rectData->rectangleSelected = false;
+		rectData->mouseMove = true;
+	}
+	else if(event == CV_EVENT_LBUTTONUP) { // se suelta el boton izquierdo
+		rectData->rectangle = Rect(rectData->initialClickPoint, rectData->currentMousePoint);
+		rectData->rectangleSelected = true;
+		rectData->mouseMove = false;
+	}
+	/*else if (event == CV_EVENT_RBUTTONDOWN) { // se pulsa el boton derecho
+		
+		// si se pulsa el boton derecho podemos hacer
+		// que se reseten los valores HSV del objeto		
+	}*/
+}
 
-    if ( !cap.isOpened() ) { // if not success, exit program
-        cout << "Cannot open the web cam" << endl;
-    }
-    
-    Mat imgOri, imgEqu;
-    vector<Mat> channels; 
-    
-    // Hacemos una captura
-    cap.read(imgOri);
-    
-    // Cambiamos el formato de color (BGR a YCrCb)
-    cvtColor(imgOri, imgEqu, CV_BGR2YCrCb);
-    
-    // Dividimos los canales de la imagen ecualizada en un vector
-    split(imgEqu,channels);
-    
-    // Realizamos la ecualizacion del canal 0 (Y)
-    equalizeHist(channels[0], channels[0]);
-    
-    // Volvemos a juntar los canales (ecualizado Y)
-    merge(channels,imgEqu);
-    
-    // Volvemos a cambiar el formato de color para que se pueda mostrar correctamente (YCrCb a BGR)
-    cvtColor(imgEqu, imgEqu, CV_YCrCb2BGR);
-    
-    imshow("Original Image", imgOri);
-    imshow("Histogram Equalized", imgEqu);
-    
-    waitKey(0); //wait for key press
+void recordObjectColor(t_Rectangle * rectData, Object &object, Mat cameraFeed, Mat hsvFrame) {
+	
+	if(rectData->rectangleSelected && !rectData->mouseMove)	{ // si se ha terminado de dibujar el rectangulo
+		vector<int> h, s, v;
+		
+		if(rectData->rectangle.width < 1 || rectData->rectangle.height < 1) {
+			cout << "Dibuja un rectangulo, no una linea" << endl;
+		}
+		else {
+			// recorro todo el rectangulo cogiendo los valores (HSV) de cada pixel
+			for(int i = rectData->rectangle.x; i < rectData->rectangle.x + rectData->rectangle.width; i++) {
+				for(int j = rectData->rectangle.y ; j < rectData->rectangle.y + rectData->rectangle.height; j++) {
+					h.push_back((int)hsvFrame.at<Vec3b>(j, i)[0]);
+					s.push_back((int)hsvFrame.at<Vec3b>(j, i)[1]);
+					v.push_back((int)hsvFrame.at<Vec3b>(j, i)[2]);
+				}
+			}
+		}
+		
+		rectData->rectangleSelected = false;
+		
+		// Asigno los valores HSV maximos y minimos
+		if(h.size() > 0) {
+			int hmin, hmax, smin, smax, vmin, vmax;
+			
+			hmin = *min_element(h.begin(), h.end());
+			smin = *min_element(s.begin(), s.end());
+			vmin = *min_element(v.begin(), v.end());
+			
+			object.setHSVmin(hmin, smin, vmin);
+			
+			hmax = *max_element(h.begin(), h.end());
+			smax = *max_element(s.begin(), s.end());
+			vmax = *max_element(v.begin(), v.end());
+			
+			object.setHSVmax(hmax, smax, vmax);
+		}
+		
+	}
+	else if(rectData->mouseMove) { // dibujo el rectangulo mientras no se suelte el boton izq.
+		rectangle(cameraFeed, rectData->initialClickPoint, rectData->currentMousePoint, Scalar(0, 255, 0));
+	}
+}
 
-    destroyAllWindows(); //destroy all open windows*/
-    
+// Funcion de Ecualizacion de histograma para imagenes a color
+void equalizeHistogram(Mat threshold, Mat &equalized) {   
     /********* Ecualizacion de histograma *********/
     vector<Mat> channels;
 	// Cambiamos el formato de color (BGR a YCrCb)
@@ -102,18 +129,14 @@ void equalizeHistogram(Mat threshold, Mat &equalized) {
 	/*********************************************/   
 }
 
-void thresholdOtsu(Mat threshold, Mat &otsu) {
-	Mat imgGray;
+// Funcion para aplicar una binarizacion de la imagen con
+// el algoritmo Otsu
+void thresholdOtsu(Mat equalized, Mat &otsu) {
 	
-	/******** Aplicamos filtro Otsu ********/
-	// TODO: Investigar por que peta al compilar
-	//cvtColor(threshold, imgGray, CV_BGR2GRAY);
-	//threshold(imgGray, otsu, 127, 255, THRESH_BINARY | THRESH_OTSU);
-	//cvtColor(otsu, otsu, CV_GRAY2BGR);
-	/**************************************/
+	threshold(equalized, otsu, 127, 255, THRESH_BINARY | THRESH_OTSU);
 }
 
-//morphological opening (removes small objects from the foreground)
+// Morphological opening (removes small objects from the foreground)
 void applyOpening(Mat &threshold, int obj_radius) {
 	int obj_type = MORPH_ELLIPSE;
 	
@@ -125,7 +148,7 @@ void applyOpening(Mat &threshold, int obj_radius) {
 	//dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
 }
 
-//morphological closing (removes small holes from the foreground)
+// Morphological closing (removes small holes from the foreground)
 void applyClosing(Mat &threshold, int obj_radius) {
 	int obj_type = MORPH_ELLIPSE;
 	
@@ -137,9 +160,36 @@ void applyClosing(Mat &threshold, int obj_radius) {
 	//erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
 }
 
-void detectMultiObject(Object theObject,Mat threshold,Mat HSV, Mat &cameraFeed) {
+void trackObject(Object &object, Mat threshold, Mat &cameraFeed) {
+	
+	Moments oMoments = moments(threshold);
 
-    vector <Object> objects;
+	double dM01 = oMoments.m01;
+	double dM10 = oMoments.m10;
+	double dArea = oMoments.m00;
+	
+	if (DEBUG)
+		cout << "dArea: " << dArea << endl;
+
+	// if the area <= 10000, I consider that the there are no object 
+	// in the image and it's because of the noise, the area is not zero 
+	if (dArea > 10000) {
+		//calculate the position of the ball
+		int posX = dM10 / dArea;
+		int posY = dM01 / dArea;
+		
+
+		object.setXPos(posX);
+		object.setYPos(posY);
+		
+		// Le dibujamos un circulo al objeto
+		circle(cameraFeed, Point(posX, posY), 2, Scalar(0, 255, 0));
+	}
+}
+
+void detectMultiObject(Object theObject,Mat threshold, Mat &cameraFeed, list<Object> &objects) {
+
+    //~ vector <Object> objects;
     Mat temp;
     threshold.copyTo(temp);
     
@@ -168,13 +218,15 @@ void detectMultiObject(Object theObject,Mat threshold,Mat HSV, Mat &cameraFeed) 
                 //if the area is the same as the 3/2 of the image size, probably just a bad filter
                 //we only want the object with the largest area so we safe a reference area each
                 //iteration and compare it to the area in the next iteration.
-                if(area > MIN_OBJECT_AREA){
+                if(area > MIN_OBJECT_AREA && area < MAX_OBJECT_AREA){
 
                     object.setXPos(moment.m10/area);
                     object.setYPos(moment.m01/area);
-                    object.setType(theObject.getType());
-                    object.setColor(theObject.getColor());
 
+					if(objects.size() > numObjects) {
+						objects.pop_front();
+					}
+					
                     objects.push_back(object);
 
                     objectFound = true;
@@ -189,35 +241,31 @@ void detectMultiObject(Object theObject,Mat threshold,Mat HSV, Mat &cameraFeed) 
             putText(cameraFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
         }
     }
+    else {
+		objects.clear();
+	}
+}
+
+void excessOfColourThreshold(Mat cameraFeed, Mat &imgThresholded, const vector<float> &values) {
+	Mat M = Mat(1, 3, CV_32F); // 1x3 Matrix
+
+	M.at<float>(0, 0) = values[0];//0.0;
+	M.at<float>(0, 1) = values[1];//-1.0;
+	M.at<float>(0, 2) = values[2];//1.44;
+
+	transform(cameraFeed, imgThresholded, M);
 }
 
 //Las inicializamos en el punto medio de la pantalla, para que no se muevan los motores de inicio
 void *captura(void *thread_cola) {
-    
-    t_Coordenada *coordenada = (t_Coordenada *)thread_cola;
 	
-    int iLowH = 170;
-    int iHighH = 179;
-
-    int iLowS = 80; //50 si hay mucha luz de sol
-    int iHighS = 255;
-
-    int iLowV = 60;
-    int iHighV = 255;
+	t_Coordenada *coordenada = (t_Coordenada *)thread_cola;   
 	
     VideoCapture cap(0); //capture the video from webcam
 
     if ( !cap.isOpened() ) { // if not success, exit program
         cout << "Cannot open the web cam" << endl;
-    }
-
-    /*namedWindow("Thresholded Image", CV_WINDOW_AUTOSIZE); //create a window called "Control"
-    namedWindow("Original", CV_WINDOW_AUTOSIZE);*/
-    
-    int dimensFoto = 0;
-
-    int iLastX = -1; 
-    int iLastY = -1;
+    }    
 
     //Capture a temporary image from the camera
     Mat imgTmp, dst;
@@ -226,51 +274,66 @@ void *captura(void *thread_cola) {
     //Create a black image with the size as the camera output
     Mat imgLines = Mat::zeros( imgTmp.size(), CV_8UC3 );
  
-    if (DEBUG == 2)
-        cout << "Antes de while" << endl;
     
     while (true) {
-        Mat imgOriginal, imgEqu, imgHSV, imgThresholded, imgOtsu, imgGray;
-		vector<Mat> channels; 
-        bool bSuccess = cap.read(imgOriginal); // read a new frame from video
+        
+		Mat imgOriginal, imgGray, imgThresholded, imgNormalized;
+        
+		vector<Mat> channels;
+		
+        bool bSuccess = cap.read(imgOriginal);
 
-         if (!bSuccess) { //if not success, break loop
+        if (!bSuccess) {
             cout << "Cannot read a frame from video stream" << endl;
-        }                              		
+        }                                              	
         		              
-        
-        if (DEBUG == 2)
-			cout << "Antes de la ecualizacion de histograma" << endl;
-        
-        /******* Ecualizacion de histograma ********/
-		equalizeHistogram(imgOriginal, imgEqu);
+        /* 
+         * Realizamos el filtrado de la imagen
+         * para detectar los objetos 
+         */
+         
+		vector<float> values(3, 0.0);
+		values[0] = 0.0; // Blue channel value
+		values[1] = -1.0; // Green channel value
+		values[2] = 1.44; // Red channel value
+         
+		/* 
+		 * Generamos imagen en escala de grises con los 
+		 * objetos detectados 
+		 */
+		excessOfColourThreshold(imgOriginal, imgGray, values);
 		
+		applyOpening(imgGray, 2);
+		applyClosing(imgGray, 2);		
+
+		/* Normalizamos histograma de la imagen en escala de grises */
+		normalize(imgGray, imgNormalized, 0, 255, NORM_MINMAX);
 		
-		if (DEBUG == 2)
-			cout << "Antes del filtrado Otsu" << endl;
+		/* 
+		 * Generamos imagen binarizada (objetos en blanco y 
+		 * el resto de la imagenen negro)
+		 */
+		threshold(imgNormalized, imgThresholded, 180, 255, THRESH_BINARY);        	
+		
+		/* Creamos una lista con todos los objetos detectados */
+		Object object;
+		detectMultiObject(object, imgThresholded, imgOriginal, coordenada->lista);
+		
+		/*imshow("Threshold Binarization Image", imgThresholded);			
+		imshow("Original Image", imgOriginal);
+		
+		cout << "Num objetos: " << coordenada->lista.size() << endl;
+		int i = 0;
+		while (!coordenada->lista.empty()) {
+			cout << "Objeto " << i << ": pos_x(" << 
+			coordenada->lista.front().getXPos() << 
+			") pos_y(" << coordenada->lista.front().getYPos() << ")" << endl;
+			i++;
+			coordenada->lista.pop_front();
+		}*/
 	
-		/******** Aplicamos filtro Otsu ********/
-		cvtColor(imgEqu, imgGray, CV_BGR2GRAY);
-		threshold(imgGray, imgOtsu, 127, 255, THRESH_BINARY | THRESH_OTSU);
-		cvtColor(imgOtsu, imgOtsu, CV_GRAY2BGR);
-		/**************************************/
-		
-		
-		/************ Aplicamos filtrado a la imagen *************/			
-        cvtColor(imgEqu, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
-        
-        inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image     
-        
-        applyOpening(imgThresholded, 2);
-        
-        applyClosing(imgThresholded, 2);       
-        /**********************************************************/
 
-		if (DEBUG == 2)
-			cout << "Antes de calcular los momentos " << endl;
-
-		/******* Calculo del area del objeto ********/
-        Moments oMoments = moments(imgThresholded);
+        /*Moments oMoments = moments(imgThresholded);
 
         double dM01 = oMoments.m01;
         double dM10 = oMoments.m10;
@@ -307,16 +370,15 @@ void *captura(void *thread_cola) {
             coordenada->pos_y = -1;
         }
 
-        //sleep(1);
 
-        //imshow("Thresholded Image", imgThresholded); //show the thresholded image
+        imshow("Thresholded Image", imgHSV); //show the thresholded image
 
         //imgOriginal = imgOriginal + imgLines;
-        //imshow("Original", imgOriginal); //show the original image
+        imshow("Original", imgOriginal); //show the original image*/
         
-        //waitKey(0); //wait for key press
+        waitKey(2); //wait for key press
         
   }// fin while
     
-  pthread_exit(NULL);
+  //~ pthread_exit(NULL);
 }

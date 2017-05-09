@@ -24,16 +24,20 @@ public:
 	Scalar getHSVmin();
 	Scalar getHSVmax();
 
-	void setHSVmin(Scalar min);
-	void setHSVmax(Scalar max);
+	void setHSVmin(int hmin, int smin, int vmin);
+	void setHSVmax(int hmax, int smax, int vmax);
 
-	string getType(){return type;}
-	void setType(string t){type = t;}
+	string getType() {
+		return type;
+	}
+	void setType(string t) {
+		type = t;
+	}
 
-	Scalar getColor(){
+	Scalar getColor() {
 		return Color;
 	}
-	void setColor(Scalar c){
+	void setColor(Scalar c) {
 
 		Color = c;
 	}

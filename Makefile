@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -c -g -Wall -Wno-unused-variable
+CFLAGS = -c -ggdb -Wall -Wno-unused-variable
 BASEDIR = $(shell pwd)
 OBJDIR = $(BASEDIR)/obj
 BINDIR = $(BASEDIR)/bin
