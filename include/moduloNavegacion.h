@@ -155,10 +155,10 @@ int busquedaBinariaY(vector<int>& ejeY, int y_px, int inicio, int fin){
 
     else if(ejeY[middle] > y_px)
     {
-        return busquedaBinariaY(ejeY, y_px, middle + 1, fin);
+        return busquedaBinariaY(ejeY, y_px, middle, fin);
     }
 
-    return busquedaBinariaY(ejeY, y_px, inicio, middle - 1);
+    return busquedaBinariaY(ejeY, y_px, inicio, middle);
 
 } //fin busquedaBinariaY
 
@@ -207,10 +207,10 @@ int busquedaBinariaX(vector<tElemento_x> ejeX, int x_px, int inicio, int fin){
 
     else if(ejeX[middle].x_px > x_px)
     {
-        return busquedaBinariaX(ejeX, x_px, inicio, middle - 1);
+        return busquedaBinariaX(ejeX, x_px, inicio, middle);
     }
 
-    return busquedaBinariaX(ejeX, x_px, middle + 1, fin);
+    return busquedaBinariaX(ejeX, x_px, middle, fin);
 
 } // fin busquedaBinariaX
 
@@ -222,21 +222,23 @@ void fillVectorY(vector<int>& ejeY){
 	ejeY.push_back(297); //Eje Y a 35 cm del robot
 	ejeY.push_back(262); //Eje Y a 40 cm del robot
 	ejeY.push_back(237); //Eje Y a 45 cm del robot
-	//ejeY.push_back(213); //Eje Y a 50 cm del robot
-	//ejeY.push_back(196); //Eje Y a 55 cm del robot
-	//ejeY.push_back(180); //Eje Y a 60 cm del robot
+	ejeY.push_back(213); //Eje Y a 50 cm del robot
+	ejeY.push_back(196); //Eje Y a 55 cm del robot
+	ejeY.push_back(180); //Eje Y a 60 cm del robot
+	ejeY.push_back(166); //Eje Y a 65 cm del robot
+	ejeY.push_back(155); //Eje Y a 70 cm del robot
+	ejeY.push_back(143); //Eje Y a 75 cm del robot
 
 	//A partir de aqui faltan las X, hay bastante error en la Y, pero se toma la del punto central para "trazar" la horizontal
 	//Hay pocos pixeles entre ejes y el error aumenta, pero en el "mundo real" es aceptable el error
-	/*ejeY.push_back(166); //Eje Y a 65 cm del robot
-	ejeY.push_back(155); //Eje Y a 70 cm del robot
-	ejeY.push_back(143); //Eje Y a 75 cm del robot
+	/*
 	ejeY.push_back(134); //Eje Y a 80 cm del robot
 	ejeY.push_back(125); //Eje Y a 85 cm del robot
 	ejeY.push_back(119); //Eje Y a 90 cm del robot
 	ejeY.push_back(112); //Eje Y a 95 cm del robot
 	ejeY.push_back(105); //Eje Y a 100 cm del robot
-	ejeY.push_back(99); //Eje Y a 105 cm del robot*/
+	ejeY.push_back(99); //Eje Y a 105 cm del robot
+	*/
 }
 
 
@@ -487,6 +489,353 @@ int fillVectorX(int ejeY, vector<tElemento_x>& ejeX){
 
 			salida_cm = 45;
 		break;
+
+		//EJE Y a 50 cm del robot
+		case 213:
+			aux.x_px = 15;
+			aux.x_cm = -25;
+			ejeX.push_back(aux);
+
+			aux.x_px = 75;
+			aux.x_cm = -20;
+			ejeX.push_back(aux);
+
+			aux.x_px = 135;
+			aux.x_cm = -15;
+			ejeX.push_back(aux);
+
+			aux.x_px = 196;
+			aux.x_cm = -10;
+			ejeX.push_back(aux);
+
+			aux.x_px = 255;
+			aux.x_cm = -5;
+			ejeX.push_back(aux);
+
+			aux.x_px = 315;
+			aux.x_cm = 0;
+			ejeX.push_back(aux);
+
+			aux.x_px = 374;
+			aux.x_cm = 5;
+			ejeX.push_back(aux);
+
+			aux.x_px = 434;
+			aux.x_cm = 10;
+			ejeX.push_back(aux);
+
+			aux.x_px = 495;
+			aux.x_cm = 15;
+			ejeX.push_back(aux);
+
+			aux.x_px = 554;
+			aux.x_cm = 20;
+			ejeX.push_back(aux);
+
+			aux.x_px = 614;
+			aux.x_cm = 25;
+			ejeX.push_back(aux);
+
+			salida_cm = 50;
+		break;
+
+		//EJE Y a 55 cm del robot
+		case 196:
+			aux.x_px = 38;
+			aux.x_cm = -25;
+			ejeX.push_back(aux);
+
+			aux.x_px = 94;
+			aux.x_cm = -20;
+			ejeX.push_back(aux);
+
+			aux.x_px = 150;
+			aux.x_cm = -15;
+			ejeX.push_back(aux);
+
+			aux.x_px = 206;
+			aux.x_cm = -10;
+			ejeX.push_back(aux);
+
+			aux.x_px = 260;
+			aux.x_cm = -5;
+			ejeX.push_back(aux);
+
+			aux.x_px = 315;
+			aux.x_cm = 0;
+			ejeX.push_back(aux);
+
+			aux.x_px = 369;
+			aux.x_cm = 5;
+			ejeX.push_back(aux);
+
+			aux.x_px = 424;
+			aux.x_cm = 10;
+			ejeX.push_back(aux);
+
+			aux.x_px = 480;
+			aux.x_cm = 15;
+			ejeX.push_back(aux);
+
+			aux.x_px = 535;
+			aux.x_cm = 20;
+			ejeX.push_back(aux);
+
+			aux.x_px = 590;
+			aux.x_cm = 25;
+			ejeX.push_back(aux);
+
+			aux.x_px = 640;
+			aux.x_cm = 30;
+			ejeX.push_back(aux);
+
+			salida_cm = 55;
+		break;
+
+		//EJE Y a 60 cm del robot
+		case 180:
+			aux.x_px = 10;
+			aux.x_cm = -30;
+			ejeX.push_back(aux);
+
+			aux.x_px = 59;
+			aux.x_cm = -25;
+			ejeX.push_back(aux);
+
+			aux.x_px = 112;
+			aux.x_cm = -20;
+			ejeX.push_back(aux);
+
+			aux.x_px = 163;
+			aux.x_cm = -15;
+			ejeX.push_back(aux);
+
+			aux.x_px = 214;
+			aux.x_cm = -10;
+			ejeX.push_back(aux);
+
+			aux.x_px = 265;
+			aux.x_cm = -5;
+			ejeX.push_back(aux);
+
+			aux.x_px = 315;
+			aux.x_cm = 0;
+			ejeX.push_back(aux);
+
+			aux.x_px = 365;
+			aux.x_cm = 5;
+			ejeX.push_back(aux);
+
+			aux.x_px = 416;
+			aux.x_cm = 10;
+			ejeX.push_back(aux);
+
+			aux.x_px = 468;
+			aux.x_cm = 15;
+			ejeX.push_back(aux);
+
+			aux.x_px = 518;
+			aux.x_cm = 20;
+			ejeX.push_back(aux);
+
+			aux.x_px = 568;
+			aux.x_cm = 25;
+			ejeX.push_back(aux);
+
+			aux.x_px = 619;
+			aux.x_cm = 30;
+			ejeX.push_back(aux);
+			
+			salida_cm = 60;
+		break;
+
+		//EJE Y a 65 cm del robot
+		case 166:
+			aux.x_px = 30;
+			aux.x_cm = -30;
+			ejeX.push_back(aux);
+
+			aux.x_px = 77;
+			aux.x_cm = -25;
+			ejeX.push_back(aux);
+
+			aux.x_px = 125;
+			aux.x_cm = -20;
+			ejeX.push_back(aux);
+
+			aux.x_px = 173;
+			aux.x_cm = -15;
+			ejeX.push_back(aux);
+
+			aux.x_px = 222;
+			aux.x_cm = -10;
+			ejeX.push_back(aux);
+
+			aux.x_px = 269;
+			aux.x_cm = -5;
+			ejeX.push_back(aux);
+
+			aux.x_px = 315;
+			aux.x_cm = 0;
+			ejeX.push_back(aux);
+
+			aux.x_px = 362;
+			aux.x_cm = 5;
+			ejeX.push_back(aux);
+
+			aux.x_px = 410;
+			aux.x_cm = 10;
+			ejeX.push_back(aux);
+
+			aux.x_px = 458;
+			aux.x_cm = 15;
+			ejeX.push_back(aux);
+
+			aux.x_px = 505;
+			aux.x_cm = 20;
+			ejeX.push_back(aux);
+
+			aux.x_px = 551;
+			aux.x_cm = 25;
+			ejeX.push_back(aux);
+
+			aux.x_px = 599;
+			aux.x_cm = 30;
+			ejeX.push_back(aux);
+			
+			salida_cm = 65;
+		break;
+
+		//EJE Y a 70 cm del robot
+		case 155:
+			aux.x_px = 4;
+			aux.x_cm = -35;
+			ejeX.push_back(aux);
+
+			aux.x_px = 49;
+			aux.x_cm = -30;
+			ejeX.push_back(aux);
+
+			aux.x_px = 93;
+			aux.x_cm = -25;
+			ejeX.push_back(aux);
+
+			aux.x_px = 138;
+			aux.x_cm = -20;
+			ejeX.push_back(aux);
+
+			aux.x_px = 183;
+			aux.x_cm = -15;
+			ejeX.push_back(aux);
+
+			aux.x_px = 227;
+			aux.x_cm = -10;
+			ejeX.push_back(aux);
+
+			aux.x_px = 272;
+			aux.x_cm = -5;
+			ejeX.push_back(aux);
+
+			aux.x_px = 316;
+			aux.x_cm = 0;
+			ejeX.push_back(aux);
+
+			aux.x_px = 359;
+			aux.x_cm = 5;
+			ejeX.push_back(aux);
+
+			aux.x_px = 403;
+			aux.x_cm = 10;
+			ejeX.push_back(aux);
+
+			aux.x_px = 448;
+			aux.x_cm = 15;
+			ejeX.push_back(aux);
+
+			aux.x_px = 493;
+			aux.x_cm = 20;
+			ejeX.push_back(aux);
+
+			aux.x_px = 538;
+			aux.x_cm = 25;
+			ejeX.push_back(aux);
+
+			aux.x_px = 580;
+			aux.x_cm = 30;
+			ejeX.push_back(aux);
+
+			aux.x_px = 624;
+			aux.x_cm = 35;
+			ejeX.push_back(aux);
+			
+			salida_cm = 70;
+		break;
+
+		//EJE Y a 75 cm del robot
+		case 143:
+			aux.x_px = 23;
+			aux.x_cm = -35;
+			ejeX.push_back(aux);
+
+			aux.x_px = 66;
+			aux.x_cm = -30;
+			ejeX.push_back(aux);
+
+			aux.x_px = 106;
+			aux.x_cm = -25;
+			ejeX.push_back(aux);
+
+			aux.x_px = 149;
+			aux.x_cm = -20;
+			ejeX.push_back(aux);
+
+			aux.x_px = 191;
+			aux.x_cm = -15;
+			ejeX.push_back(aux);
+
+			aux.x_px = 233;
+			aux.x_cm = -10;
+			ejeX.push_back(aux);
+
+			aux.x_px = 275;
+			aux.x_cm = -5;
+			ejeX.push_back(aux);
+
+			aux.x_px = 316;
+			aux.x_cm = 0;
+			ejeX.push_back(aux);
+
+			aux.x_px = 357;
+			aux.x_cm = 5;
+			ejeX.push_back(aux);
+
+			aux.x_px = 398;
+			aux.x_cm = 10;
+			ejeX.push_back(aux);
+
+			aux.x_px = 440;
+			aux.x_cm = 15;
+			ejeX.push_back(aux);
+
+			aux.x_px = 481;
+			aux.x_cm = 20;
+			ejeX.push_back(aux);
+
+			aux.x_px = 523;
+			aux.x_cm = 25;
+			ejeX.push_back(aux);
+
+			aux.x_px = 563;
+			aux.x_cm = 30;
+			ejeX.push_back(aux);
+
+			aux.x_px = 605;
+			aux.x_cm = 35;
+			ejeX.push_back(aux);
+			
+			salida_cm = 75;
+		break;
+
 
 	}//fin switch
 
