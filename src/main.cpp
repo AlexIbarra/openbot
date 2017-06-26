@@ -10,7 +10,7 @@
 
 using namespace std;
 
-int main( void ) {
+/*int main( void ) {
     
     int iLowH = 170;
     int iHighH = 179;
@@ -82,5 +82,46 @@ int main( void ) {
     
 
     return 0;
-}
+}*/
 
+int main( void ) {
+    
+    int iLowH = 170;
+    int iHighH = 179;
+
+    int iLowS = 80; //50 si hay mucha luz de sol
+    int iHighS = 255;
+
+    int iLowV = 60;
+    int iHighV = 255;
+    
+    int encI, encD;
+    pthread_t thread1 = 1, thread2, thread3;
+    t_DatosCamara datosCamara;
+    
+    t_Encoder datosEncIzq, datosEncDer;
+    Camara * cam = new Camara(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV);
+    
+    initMotores();
+    initEncoders();
+
+    datosEncDer.enable = datosEncIzq.enable = 0;
+    
+    try {
+
+        rc = pthread_create(&thread1, NULL, captura, (void *)&datosCamara);
+
+        encI = pthread_create(&thread2, NULL, cuentaIzq, (void *)&datosEncIzq);
+
+        encD = pthread_create(&thread3, NULL, cuentaDer, (void *)&datosEncDer);
+
+        while(1){
+            run(&datosCamara, &datosEncIzq, &datosEncDer);
+        }
+
+    } catch (const exception& e){
+        cerr << "Fatal error ocurred" << endl;
+    }
+
+    return 0;
+}

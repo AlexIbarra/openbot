@@ -27,5 +27,10 @@ typedef struct {
 	int pos_y;
 } t_Coordenada;
 
+typedef struct {
+    t_Coordenada coordenadas;
+    Queue cola;
+} t_DatosCamara;
+
 #endif /* MODULOCAMARA_H */
 
