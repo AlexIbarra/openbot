@@ -1,12 +1,14 @@
 #include <unistd.h>
 #include <iostream>
 #include <list>
+#include <queue>
 #include <pthread.h>
 #include "moduloMotor.h"
 #include "moduloCamara.h"
 #include "moduloCentral.h"
 #include "moduloBroker.h"
 #include "Object.h"
+#include "moduloEncoder.h"
 
 using namespace std;
 
@@ -45,9 +47,6 @@ void testMultiObject() {
         list<Object> objects;
         
         detectMultiObject(red,threshold,cameraFeed, objects);
-        
-        imshow(windowName,cameraFeed);
-        //imshow(windowName1,HSV);
 
         //delay 30ms so that screen can refresh.
         //image will not appear without this waitKey() command
@@ -69,11 +68,11 @@ void testRecordObjectColor() {
 		cap.set(CV_CAP_PROP_FRAME_WIDTH, FRAME_WIDTH);
 		cap.set(CV_CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT);
 		
-		namedWindow(windowName);
+		//~ namedWindow(windowName);
 		
 		t_Rectangle rectangle;
 		
-		setMouseCallback(windowName, onMouse, &rectangle);
+		//~ setMouseCallback(windowName, onMouse, &rectangle);
 		
 		while(true) {
 			cap.read(cameraFeed);					
@@ -92,13 +91,12 @@ void testRecordObjectColor() {
 			
 			trackObject(object, threshold, cameraFeed);
         
-			imshow(windowName, cameraFeed);
+			//~ imshow(windowName, cameraFeed);
 			
 			waitKey(30);		
 		}
 	}
 }
-
 
 void *testThresholding(void * cosas) {
 	
@@ -139,8 +137,8 @@ void *testThresholding(void * cosas) {
 			
 			threshold(imgNormalized, imgThresholded, 180, 255, THRESH_BINARY);
 			
-			applyOpening(imgOtsu, 2);
-			applyClosing(imgOtsu, 2);
+			applyOpening(imgThresholded, 2);
+			applyClosing(imgThresholded, 2);
 			
 			list<Object> objects;
 			
@@ -155,62 +153,37 @@ void *testThresholding(void * cosas) {
 
 }
 
+
+
 int main( void ) {
+	   
+    int encI, encD, rc;
+    pthread_t thread1 = 1, thread2, thread3;
+    t_DatosCamara datosCamara;
+    t_Encoder datosEncIzq, datosEncDer;
     
-    bool encontrado = false;
+    Camara * cam = new Camara();//new Camara(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV);
     
-    //~ Camara * cam = new Camara(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV);
-    Camara * cam = new Camara();
     initMotores();
+    initEncoders();
 
-    int x, y, ultX=-1, ultY=-1, rc, moviAnte = -1, estado = st_inicial;
+    datosEncDer.enable = datosEncIzq.enable = 0;
     
-    pthread_t thread = 1;
-    t_Coordenada coordenada;    
-	
+    try {
 
-    try {        
+        rc = pthread_create(&thread1, NULL, captura, (void *)&datosCamara);
 
-        rc = pthread_create(&thread, NULL, captura, (void *)&coordenada);
-       	
-       	while(coordenada.pos_x == -1 && coordenada.pos_x == -1) {
-			sleep(1);
-		}
-       	        
-        while(estado != st_encontrado) {
-			
-            x = coordenada.pos_x;
-            y = coordenada.pos_y;
-            
-            if(coordenada.pos_x == -1 && coordenada.pos_x == -1) {
-				sleep(1);
-			}
-            
-            estado = run(x, y, estado, ultX, ultY);
-            
-            if (estado != st_perdido){
-				ultX = x;
-				ultY = y;
-			}
-			
-            if(moviAnte == -1 && y>=440   && x > 270 && x < 380 ) {
-				avanza();
-				usleep(5000000);
-				parar();
-				cout << "Encontrado" << endl;
-				encontrado = true;
-			}
-			else {
-                 moviAnte = run(x,y, moviAnte);
-			}
-                
+        encI = pthread_create(&thread2, NULL, cuentaIzq, (void *)&datosEncIzq);
+
+        encD = pthread_create(&thread3, NULL, cuentaDer, (void *)&datosEncDer);
+
+        while(1){
+            run(datosCamara, datosEncIzq, datosEncDer);
         }
-    
-    } catch (const exception& e) {
-        cerr << "Error on Network Connection.\n" << "Check mosquitto is running & IP/PORT\n";
+
+    } catch (const exception& e){
+        cerr << "Fatal error ocurred" << endl;
     }
-    
 
     return 0;
 }
-

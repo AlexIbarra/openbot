@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <vector>
 #include <list>
+#include <queue>
 
 using namespace cv;
 using namespace std;
@@ -256,16 +257,17 @@ void excessOfColourThreshold(Mat cameraFeed, Mat &imgThresholded, const vector<f
 	transform(cameraFeed, imgThresholded, M);
 }
 
+
 //Las inicializamos en el punto medio de la pantalla, para que no se muevan los motores de inicio
 void *captura(void *thread_cola) {
-	
-	t_Coordenada *coordenada = (t_Coordenada *)thread_cola;   
+
+	t_Coordenada *coordenada = (t_Coordenada *)thread_cola;
 	
     VideoCapture cap(0); //capture the video from webcam
 
     if ( !cap.isOpened() ) { // if not success, exit program
         cout << "Cannot open the web cam" << endl;
-    }    
+    }
 
     //Capture a temporary image from the camera
     Mat imgTmp, dst;
@@ -273,7 +275,6 @@ void *captura(void *thread_cola) {
 
     //Create a black image with the size as the camera output
     Mat imgLines = Mat::zeros( imgTmp.size(), CV_8UC3 );
- 
     
     while (true) {
         
@@ -319,66 +320,18 @@ void *captura(void *thread_cola) {
 		Object object;
 		detectMultiObject(object, imgThresholded, imgOriginal, coordenada->lista);
 		
-		/*imshow("Threshold Binarization Image", imgThresholded);			
-		imshow("Original Image", imgOriginal);
-		
-		cout << "Num objetos: " << coordenada->lista.size() << endl;
-		int i = 0;
-		while (!coordenada->lista.empty()) {
-			cout << "Objeto " << i << ": pos_x(" << 
-			coordenada->lista.front().getXPos() << 
-			") pos_y(" << coordenada->lista.front().getYPos() << ")" << endl;
-			i++;
-			coordenada->lista.pop_front();
-		}*/
+
 	
 
-        /*Moments oMoments = moments(imgThresholded);
 
-        double dM01 = oMoments.m01;
-        double dM10 = oMoments.m10;
-        double dArea = oMoments.m00;
-
-        int rows, cols;
-        
-        if(dimensFoto == 0) {
-            rows = imgThresholded.rows;
-            cols = imgThresholded.cols;
-            line(imgLines, Point(cols/2, iLastY), Point(cols/2, rows), Scalar(0,0,255), 2);
-            dimensFoto++;
-        }
-        
-        if (DEBUG)
-            cout << "dArea: " << dArea << endl;
-
-        // if the area <= 10000, I consider that the there are no object in the image and it's because of the noise, the area is not zero 
-        if (dArea > 10000) {
-            //calculate the position of the ball
-            int posX = dM10 / dArea;
-            int posY = dM01 / dArea;
-			
-
-            iLastX = posX;
-            iLastY = posY;
-
-            coordenada->pos_x = posX;
-            coordenada->pos_y = posY;
-            
-        }
-        else {
-            coordenada->pos_x = -1;
-            coordenada->pos_y = -1;
-        }
-
-
-        imshow("Thresholded Image", imgHSV); //show the thresholded image
 
         //imgOriginal = imgOriginal + imgLines;
         imshow("Original", imgOriginal); //show the original image*/
         
         waitKey(2); //wait for key press
         
-  }// fin while
-    
-  //~ pthread_exit(NULL);
+
+	
+	}// fin while
+	pthread_exit(NULL);
 }

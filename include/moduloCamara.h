@@ -3,6 +3,7 @@
 
 #include "Object.h"
 #include <list>
+#include <queue>
 
 
 class Camara {
@@ -31,6 +32,7 @@ public:
 #define MIN_OBJECT_AREA (20*20)
 const double MAX_OBJECT_AREA ((FRAME_HEIGHT*FRAME_WIDTH)/2.5);
 
+
 typedef struct {
 	int pos_x;
 	int pos_y;
@@ -55,6 +57,11 @@ void thresholdOtsu(Mat threshold, Mat &otsu);
 void applyOpening(Mat &threshold, int obj_radius = 2);
 void applyClosing(Mat &threshold, int obj_radius = 2);
 void onMouse(int event, int x, int y, int flags, void * params);
+
+typedef struct {
+    t_Coordenada coordenadas;
+    //~ queue<Object> cola;
+} t_DatosCamara;
 
 #endif /* MODULOCAMARA_H */
 
