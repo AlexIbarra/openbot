@@ -9,7 +9,7 @@ Es necesario incluir en el proyecto los siguientes ficheros (subidos al git):
 Es necesaria una llamada a iniciaNavegacion() siempre al inicio [por ejemplo en main, cuando se inicializan los motores,
 podría ser un buen sitio], ya que es la función que rellena los valores que hemos tomado de las fotos de la cuadrícula.
 Cada vez que se quieran los centimetros de unos pixeles dados, llamar a pxToCm(int x, int y)
-Devolverá un tipo coordenada, definido aqui también, que contiene dos enteros, la X y la Y en cm
+Devolverá un tipo t_Punto, definido aqui también, que contiene dos enteros, la X y la Y en cm
 NOTA: no están todos los valores de ejes añadidos, los ire añadiendo sobre la marcha, era mas importante tener
 el modulo funcional primero, solo es añadir a mano mas valores tomados a las funciones "fill"
 */
