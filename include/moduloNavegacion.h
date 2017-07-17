@@ -57,6 +57,8 @@ typedef struct{
 //Declaración de funciones
 t_Punto pxToCm(int x_px, int y_px);
 
+int distancia(int x1, int y1, int x2, int y2);
+
 void fillVectorY(vector<int>& ejeY);
 
 int fillVectorX(int ejeY, vector<tElemento_x>& ejeX);

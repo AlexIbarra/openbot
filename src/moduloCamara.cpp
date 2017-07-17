@@ -4,110 +4,13 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/core/core.hpp"
 #include "moduloCamara.h"
-#include "Object.h"
 #include <stdio.h>
 #include <vector>
 #include <list>
-#include <queue>
 
 using namespace cv;
 using namespace std;
 
-#define DEBUG 1
-
-Camara::Camara() {
-    x = 0;
-    y = 0;
-}
-
-Camara::Camara(int ilowh, int ihighh, int ilows, int isighs, int ilowv, int ihighv) {
-    x = 0;
-    y = 0;
-    iLowH = ilowh;
-    iHighH = ihighh;
-    iLowS = ilows; 
-    iHighS = isighs;
-    iLowV = ilowv;
-    iHighV = ihighv;
-    
-}
-
-int Camara::getX() {
-    return x;
-}
-
-int Camara::getY() {
-    return y;
-}
-
-void onMouse(int event, int x, int y, int flags, void * params) {
-	
-	t_Rectangle * rectData = (t_Rectangle *)params;
-	
-	if(event == CV_EVENT_LBUTTONDOWN) { // se pulsa el boton izquierdo
-		rectData->initialClickPoint = Point(x, y);
-		//rectData->rectangleSelected = false;
-	}
-	else if(event == CV_EVENT_MOUSEMOVE) { // se mueve el raton
-		rectData->currentMousePoint = Point(x, y);
-		//rectData->rectangleSelected = false;
-		rectData->mouseMove = true;
-	}
-	else if(event == CV_EVENT_LBUTTONUP) { // se suelta el boton izquierdo
-		rectData->rectangle = Rect(rectData->initialClickPoint, rectData->currentMousePoint);
-		rectData->rectangleSelected = true;
-		rectData->mouseMove = false;
-	}
-	/*else if (event == CV_EVENT_RBUTTONDOWN) { // se pulsa el boton derecho
-		
-		// si se pulsa el boton derecho podemos hacer
-		// que se reseten los valores HSV del objeto		
-	}*/
-}
-
-void recordObjectColor(t_Rectangle * rectData, Object &object, Mat cameraFeed, Mat hsvFrame) {
-	
-	if(rectData->rectangleSelected && !rectData->mouseMove)	{ // si se ha terminado de dibujar el rectangulo
-		vector<int> h, s, v;
-		
-		if(rectData->rectangle.width < 1 || rectData->rectangle.height < 1) {
-			cout << "Dibuja un rectangulo, no una linea" << endl;
-		}
-		else {
-			// recorro todo el rectangulo cogiendo los valores (HSV) de cada pixel
-			for(int i = rectData->rectangle.x; i < rectData->rectangle.x + rectData->rectangle.width; i++) {
-				for(int j = rectData->rectangle.y ; j < rectData->rectangle.y + rectData->rectangle.height; j++) {
-					h.push_back((int)hsvFrame.at<Vec3b>(j, i)[0]);
-					s.push_back((int)hsvFrame.at<Vec3b>(j, i)[1]);
-					v.push_back((int)hsvFrame.at<Vec3b>(j, i)[2]);
-				}
-			}
-		}
-		
-		rectData->rectangleSelected = false;
-		
-		// Asigno los valores HSV maximos y minimos
-		if(h.size() > 0) {
-			int hmin, hmax, smin, smax, vmin, vmax;
-			
-			hmin = *min_element(h.begin(), h.end());
-			smin = *min_element(s.begin(), s.end());
-			vmin = *min_element(v.begin(), v.end());
-			
-			object.setHSVmin(hmin, smin, vmin);
-			
-			hmax = *max_element(h.begin(), h.end());
-			smax = *max_element(s.begin(), s.end());
-			vmax = *max_element(v.begin(), v.end());
-			
-			object.setHSVmax(hmax, smax, vmax);
-		}
-		
-	}
-	else if(rectData->mouseMove) { // dibujo el rectangulo mientras no se suelte el boton izq.
-		rectangle(cameraFeed, rectData->initialClickPoint, rectData->currentMousePoint, Scalar(0, 255, 0));
-	}
-}
 
 // Funcion de Ecualizacion de histograma para imagenes a color
 void equalizeHistogram(Mat threshold, Mat &equalized) {   
@@ -161,30 +64,70 @@ void applyClosing(Mat &threshold, int obj_radius) {
 	//erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
 }
 
-void trackObject(Object &object, Mat threshold, Mat &cameraFeed) {
+int trackObject(t_Coordenada &object) {
 	
-	Moments oMoments = moments(threshold);
+	VideoCapture cap(0); //capture the video from webcam
+
+    if ( !cap.isOpened() ) { // if not success, exit program
+        cout << "Cannot open the web cam" << endl;
+        return -1;
+    }
+    
+    Mat imgOriginal, imgGray, imgThresholded, imgNormalized;
+	
+	vector<Mat> channels;
+	
+	// TODO: Comprobar que funciona con un solo frame
+	
+	bool bSuccess = cap.read(imgOriginal);
+
+	if (!bSuccess) {
+		cout << "Cannot read a frame from video stream" << endl;
+		return -1;
+	}                                              	
+						  
+	/* 
+	 * Realizamos el filtrado de la imagen
+	 * para detectar los objetos 
+	 */
+	 
+	vector<float> values(3, 0.0);
+	values[0] = 0.0; // Blue channel value
+	values[1] = -1.0; // Green channel value
+	values[2] = 1.44; // Red channel value
+	 
+	/* 
+	 * Generamos imagen en escala de grises con los 
+	 * objetos detectados 
+	 */
+	excessOfColourThreshold(imgOriginal, imgGray, values);
+	
+	applyOpening(imgGray, 2);
+	applyClosing(imgGray, 2);		
+
+	/* Normalizamos histograma de la imagen en escala de grises */
+	normalize(imgGray, imgNormalized, 0, 255, NORM_MINMAX);
+	
+	/* 
+	 * Generamos imagen binarizada (objetos en blanco y 
+	 * el resto de la imagenen negro)
+	 */
+	threshold(imgNormalized, imgThresholded, 180, 255, THRESH_BINARY);
+	
+	
+	Moments oMoments = moments(imgThresholded);
 
 	double dM01 = oMoments.m01;
 	double dM10 = oMoments.m10;
-	double dArea = oMoments.m00;
+	double area = oMoments.m00;
 	
-	if (DEBUG)
-		cout << "dArea: " << dArea << endl;
 
 	// if the area <= 10000, I consider that the there are no object 
 	// in the image and it's because of the noise, the area is not zero 
-	if (dArea > 10000) {
+	if (area > MIN_OBJECT_AREA && area < MAX_OBJECT_AREA) {
 		//calculate the position of the ball
-		int posX = dM10 / dArea;
-		int posY = dM01 / dArea;
-		
-
-		object.setXPos(posX);
-		object.setYPos(posY);
-		
-		// Le dibujamos un circulo al objeto
-		circle(cameraFeed, Point(posX, posY), 2, Scalar(0, 255, 0));
+		object.x = dM10 / area;
+		object.y = dM01 / area;	
 	}
 }
 
@@ -259,9 +202,7 @@ void excessOfColourThreshold(Mat cameraFeed, Mat &imgThresholded, const vector<f
 
 
 //Las inicializamos en el punto medio de la pantalla, para que no se muevan los motores de inicio
-void *captura(void *thread_cola) {
-
-	t_Coordenada *coordenada = (t_Coordenada *)thread_cola;
+int captura(list<Object> &objects) {
 	
     VideoCapture cap(0); //capture the video from webcam
 
@@ -275,63 +216,51 @@ void *captura(void *thread_cola) {
 
     //Create a black image with the size as the camera output
     Mat imgLines = Mat::zeros( imgTmp.size(), CV_8UC3 );
-    
-    while (true) {
-        
-		Mat imgOriginal, imgGray, imgThresholded, imgNormalized;
-        
-		vector<Mat> channels;
-		
-        bool bSuccess = cap.read(imgOriginal);
-
-        if (!bSuccess) {
-            cout << "Cannot read a frame from video stream" << endl;
-        }                                              	
-        		              
-        /* 
-         * Realizamos el filtrado de la imagen
-         * para detectar los objetos 
-         */
-         
-		vector<float> values(3, 0.0);
-		values[0] = 0.0; // Blue channel value
-		values[1] = -1.0; // Green channel value
-		values[2] = 1.44; // Red channel value
-         
-		/* 
-		 * Generamos imagen en escala de grises con los 
-		 * objetos detectados 
-		 */
-		excessOfColourThreshold(imgOriginal, imgGray, values);
-		
-		applyOpening(imgGray, 2);
-		applyClosing(imgGray, 2);		
-
-		/* Normalizamos histograma de la imagen en escala de grises */
-		normalize(imgGray, imgNormalized, 0, 255, NORM_MINMAX);
-		
-		/* 
-		 * Generamos imagen binarizada (objetos en blanco y 
-		 * el resto de la imagenen negro)
-		 */
-		threshold(imgNormalized, imgThresholded, 180, 255, THRESH_BINARY);        	
-		
-		/* Creamos una lista con todos los objetos detectados */
-		Object object;
-		detectMultiObject(object, imgThresholded, imgOriginal, coordenada->lista);
-		
-
+            
+	Mat imgOriginal, imgGray, imgThresholded, imgNormalized;
 	
-
-
-
-        //imgOriginal = imgOriginal + imgLines;
-        imshow("Original", imgOriginal); //show the original image*/
-        
-        waitKey(2); //wait for key press
-        
-
+	vector<Mat> channels;
 	
-	}// fin while
-	pthread_exit(NULL);
+	// TODO: Comprobar que funciona con un solo frame
+	
+	bool bSuccess = cap.read(imgOriginal);
+
+	if (!bSuccess) {
+		cout << "Cannot read a frame from video stream" << endl;
+		return -1;
+	}                                              	
+						  
+	/* 
+	 * Realizamos el filtrado de la imagen
+	 * para detectar los objetos 
+	 */
+	 
+	vector<float> values(3, 0.0);
+	values[0] = 0.0; // Blue channel value
+	values[1] = -1.0; // Green channel value
+	values[2] = 1.44; // Red channel value
+	 
+	/* 
+	 * Generamos imagen en escala de grises con los 
+	 * objetos detectados 
+	 */
+	excessOfColourThreshold(imgOriginal, imgGray, values);
+	
+	applyOpening(imgGray, 2);
+	applyClosing(imgGray, 2);		
+
+	/* Normalizamos histograma de la imagen en escala de grises */
+	normalize(imgGray, imgNormalized, 0, 255, NORM_MINMAX);
+	
+	/* 
+	 * Generamos imagen binarizada (objetos en blanco y 
+	 * el resto de la imagenen negro)
+	 */
+	threshold(imgNormalized, imgThresholded, 180, 255, THRESH_BINARY);        	
+	
+	/* Creamos una lista con todos los objetos detectados */
+	Object object;
+	detectMultiObject(object, imgThresholded, imgOriginal, objects);
+
+	return 0;
 }

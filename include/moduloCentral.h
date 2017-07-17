@@ -1,35 +1,24 @@
 #ifndef MODULOCENTRAL_H
 #define MODULOCENTRAL_H
 
-#include "moduloEncoder.h"
-#include "moduloCamara.h"
-
-#define PI 3.14159265
-
-
-
-typedef enum t_Direccion {arriba, abajo, izquierda, derecha, arribaDer, arribaIzq, abajoDer, abajoIzq};
-
-typedef enum t_Estado {st_inicial, st_caminos, st_next, st_orienta, st_busca};
-
+typedef enum t_GlobalSt {st_buscaPuto, st_visitaPunto}
 typedef enum t_EstadoBusca {st_izq, st_der, st_trayizq, st_trayder, st_recto, st_encontrado, st_perdido};
 
+#define NUM_CUADRANTES 6
+#define INF 9999
+
 typedef struct {
-    t_Coordenada coordenada;
-    t_Direccion dir;
-    int angulo; //angulo respecto al eje X
-} t_PosicionActual;
+	t_Coordenada coordenada;
+	int cuadrante;
+	int distancia;	
+} t_DatoVision;
 
-bool operator<(t_Coordenada a, t_Coordenada b);
+int calculaEstado( int x, int y, int ultSt);
+void ejecuta( int st);
+int run();
+void visitaPunto();
+void buscaPuntoCercano(list<t_Coordenada> objetos, int cuadrante, t_DatoVision &punto);
 
-int obtenerAngulo(int x1, int y1, int x2, int y2, int x3, int y3);
 
-int calculaEstado( int x, int y, int ultSt, int numObjetivos, int totalObjetivos);
+#endif /* MODULOBROKER_H */
 
-int ejecuta( int st);
-
-//~ int run( int x, int y, int ultSt, int ultX, int ultY, int numObjetivos, int & totalObjetivos);
-
-void run(t_DatosCamara & datosCamara, t_Encoder & datosEncIzq, t_Encoder & datosEncDer);
-
-#endif

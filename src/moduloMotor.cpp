@@ -53,7 +53,26 @@ void rotaIzq(){
     pwmWrite(pwmMotorI, 318); 
 }
 void rotaDcha(){
-    pwmWrite(pwmMotorD, 321);
+    pwmWrite(pwmMotorD, 322);
     pwmWrite(pwmMotorI, 322);
-   
 }
+
+//El robot da una vuelta completa a la derecha en 30 segundos.
+void vuelta(){
+	pwmWrite(pwmMotorD, 322);
+    pwmWrite(pwmMotorI, 323);	
+}
+//Hace un barrido de unos 60 grados aproximadamente.
+//Si en 30 seg rota 360 grados, en 5 seg gira 60 grados
+void giraFoto(){
+	pwmWrite(pwmMotorD, 322);
+    pwmWrite(pwmMotorI, 323);	
+    sleep(5.1);
+    parar();
+}
+//El robot da una vuelta más rápida a la derecha en 11 segundos.
+void vueltaRapida(){
+	pwmWrite(pwmMotorD, 324);
+    pwmWrite(pwmMotorI, 325);	
+}
+

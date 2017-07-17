@@ -9,7 +9,7 @@ Es necesario incluir en el proyecto los siguientes ficheros (subidos al git):
 Es necesaria una llamada a iniciaNavegacion() siempre al inicio [por ejemplo en main, cuando se inicializan los motores,
 podría ser un buen sitio], ya que es la función que rellena los valores que hemos tomado de las fotos de la cuadrícula.
 Cada vez que se quieran los centimetros de unos pixeles dados, llamar a pxToCm(int x, int y)
-Devolverá un tipo t_Punto, definido aqui también, que contiene dos enteros, la X y la Y en cm
+Devolverá un tipo coordenada, definido aqui también, que contiene dos enteros, la X y la Y en cm
 NOTA: no están todos los valores de ejes añadidos, los ire añadiendo sobre la marcha, era mas importante tener
 el modulo funcional primero, solo es añadir a mano mas valores tomados a las funciones "fill"
 */
@@ -55,7 +55,7 @@ t_Punto pxToCm(int x_px, int y_px){
 	y_px_ajustado = busquedaBinariaY(ejeY, y_px, 0, ejeY.size()-1);
 
 	/*TEST*/
-	cout << "y_px_ajustado " << y_px_ajustado << endl;
+	//~ cout << "Mod Navegacion:  y_px_ajustado " << y_px_ajustado << endl;
 
 	if (!mapa_coordenadas.contains(y_px_ajustado))
 		cout << "Error en la búsqueda binaria, no existe ese eje Y" << endl;
@@ -71,12 +71,22 @@ t_Punto pxToCm(int x_px, int y_px){
 	if(salida.x == -1){
 		cout << "Error en la busquedaBinariaX, no se ha encontrado una X valida" << endl;
 	}
-
+	
+	//~ cout << "Mod Navegacion: " << salida.x << "  " << salida.y << endl;
 	return salida;
 }
 
+int distancia(int x1, int y1, int x2, int y2){
+	int dist = 0;
+	int c1, c2;
+	c1 = x2 - x1;
+	c2 = y2 - y1;
+	dist = sqrt(c1*c1 + c2*c2);
+	return dist;	
+}
+
 //Busca el valor de los ejes Y más aproximado al dado en píxeles. **VECTOR ORDENADO DE MAYOR A MENOR
-int busquedaBinariaY(vector<int>& ejeY, int y_px, int inicio, int fin){
+int busquedaBinariaY(vector<int> &ejeY, int y_px, int inicio, int fin){
 
     // Termination condition: start index greater than end index
     if(inicio > fin)

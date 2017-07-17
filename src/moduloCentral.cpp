@@ -1,249 +1,228 @@
 #include <unistd.h>
-#include <math.h>
-#include <queue>
 #include <wiringPi.h>
+#include <vector>
 #include <mosquitto.h>
 #include "moduloMotor.h"
 #include "moduloBroker.h"
 #include "moduloCentral.h"
-#include "moduloEncoder.h"
+#include "moduloCamara.h"
+#include "moduloNavegacion.h"
 
-#define DEBUG 0
-
-t_PosicionActual posActual;
-
-bool operator<(t_Coordenada a, t_Coordenada b){
-	return a.pos_x == b.pos_x && a.pos_y == b.pos_y;
-}
-
-t_Direccion obtenerDireccionVector(int x, int y){
-    if (x==0)
-    	return y>0 ? arriba : abajo;
-    else{
-    	if (y==0)
-	    	return x>0 ? derecha : izquierda;
-	    else{
-	    	if(x>0)
-	    		return y>0 ? arribaDer : abajoDer;
-	    	else
-	    		return y>0 ? arribaIzq : abajoIzq;
-	    }
-    }
-}
-//Angulo de giro entre los dos vectores, 0A y AB
-//Angulo > 0 = Derecha
-//Angulo < 0 = Izquierda
-int obtenerAngulo(int x1, int y1, int x2, int y2, int x3, int y3){
-    double z; 
-    int a1=x2-x1, a2=y2-y1, b1=x3-x2, b2=y3-y2, signo;
-    t_Direccion dirOA = obtenerDireccionVector(a1, a2);
-    if (dirOA == arriba)
-    	signo = x3 > x2 ? 1 : -1;
-    else if(dirOA == abajo)
-    	signo = x3 > x2 ? -1 : 1;
-    else if(dirOA == derecha)
-    	signo = y3 > y2 ? -1 : 1;
-    else if(dirOA == izquierda)
-    	signo = y3 > y2 ? 1 : -1;
-    else{
-	    //ecuacion explicita recta - y = mx + b
-	    //m = pendiente recta OrigAct (recta1) y de sus paralelas
-	    //y - y3 = m*(x-x3) -> y = m*x - m*x3 + y3
-	    int m = (y2-y1)/(x2-x1), bO = y1 - m*x1, bP = y3 - m*x3;
-	    if(dirOA == arribaIzq || dirOA == abajoIzq)
-			signo = bP > bO ? 1 : -1;
-		else // arribaDer || abajoDer
-			signo = bP > bO ? -1 : 1;
-	}
-
-    z = (a1*b1+a2*b2)/(sqrt(a1*a1+a2*a2)*sqrt(b1*b1+b2*b2));
-
-    return (acos(z) * 180 / PI) * signo;
-}
 
 t_EstadoBusca calculaEstado( int x, int y, t_EstadoBusca ultSt) {
-	if(y>=440 && x >= 100 && x <= 540){
+	if(y>=440 && x >= 100 && x <= 540) {
 		return st_encontrado;
-	}else if (x >= 0 && x < 100){
+	}
+	else if (x >= 0 && x < 100) {
 		return st_izq;
-	}else if (x >= 100 && x < 250){
+	}
+	else if (x >=100 && x < 250) {
 		return st_trayizq;
-	}else if (x >= 250 && x <= 390){
+	}
+	else if (x >=200 && x <= 390) {
 		return st_recto;
-	}else if (x > 390 && x <= 540){
+	}
+	else if (x > 390 && x <= 540) {
 		return st_trayder;
-	}else if (x > 540 && x <= 640){
+	}
+	else if (x > 540 && x <= 640) {
 		return st_der;
-	}else if (x == -1 && y == -1){
+	}
+	else if (x == -1 && y == -1 && ultSt != st_inicial) {
 		return st_perdido;
-	}else{
+	}
+	else {
 		return ultSt;
 	}
 }
 
-int ejecuta(t_EstadoBusca st){
-	int total;
-	switch(st){
+void ejecuta() {
+	int totalGiros = 6;
+	int giros = 0, i, distancia_minima = 500; //Una distancia muy grande para que cualquier punto sea mejor
+	t_Coordenada coordenada;
+	//~ t_EstadoInicial punto_aux, punto_objetivo;
+	//~ vector<t_EstadoInicial> puntos;
+	//~ vector<int> distancias;
+	//~ t_Punto punto;
+	
+	switch(st) {
+		//~ case st_inicial:
+			//~ //rotaIzq();
+			//~ 
+			//~ while (giros < totalGiros){
+			//~ 
+				//~ captura((void *)&coordenada);
+				//~ cout << coordenada.pos_x << "   " << coordenada.pos_y << endl;
+				//~ 
+				//~ punto_aux.coordenada = coordenada;
+				//~ punto_aux.cuadrante = giros;
+				//~ puntos.push_back(punto_aux);
+				//~ 
+				//~ cout << "llamada gira foto  " << giros << endl;
+				//~ giraFoto();
+						//~ 
+				//~ giros++;
+			//~ }
+			//~ 
+			//~ i = 0;
+			//~ while (i < puntos.size()){
+				//~ cout << "vector :" << i << " X: "  << puntos[i].coordenada.pos_x << " Y: "  << puntos[i].coordenada.pos_y << " cuandrante " << puntos[i].cuadrante << endl;
+				//~ 
+				//~ if ((puntos[i].coordenada.pos_x != -1) && (puntos[i].coordenada.pos_y != -1)){
+					//~ 
+					//~ punto = pxToCm(puntos[i].coordenada.pos_x , puntos[i].coordenada.pos_y);
+					//~ puntos[i].distancia = distancia(0, 0,  punto.x , punto.y);
+					//~ cout << "distancia :" << puntos[i].distancia << endl;
+					//~ 
+					//~ //Actualizar el punto más cercano si está mas cerca que el actual
+					//~ if(puntos[i].distancia < distancia_minima){
+						//~ punto_objetivo.coordenada.pos_x = puntos[i].coordenada.pos_x;
+						//~ punto_objetivo.coordenada.pos_y = puntos[i].coordenada.pos_y;
+						//~ punto_objetivo.cuadrante = puntos[i].cuadrante;
+						//~ punto_objetivo.distancia = puntos[i].distancia;
+						//~ distancia_minima = punto_objetivo.distancia;
+					//~ }
+				//~ }
+				//~ i++;
+				//~ cout << "Distancia minima  " << distancia_minima <<  endl;
+				//~ cout << "Cuadrante del punto objetivo  " << punto_objetivo.cuadrante <<  endl;
+				//~ cout << endl;
+			//~ }
+			//~ cout << "Salgo del while y hay que buscar el punto mas cercano del vector" << endl;
+			//~ 
+			//~ i=0;
+			//~ while (i < punto_objetivo.cuadrante){
+				//~ giraFoto();
+				//~ i++;
+			//~ }
+			//~ 
+			//~ cout << "HE ACABADO " << endl;
+			//~ sleep(5);
+			//~ 
+		//~ break;
+			
 		case st_izq:
-			//cout << "Rota Izquierda" << endl;
-			if (DEBUG)
-				cout << "|·____| |_____|" << endl;
 			rotaIzq();
 			break;
+			
 		case st_trayizq:
-			//cout << "Trayectoria Izquierda" << endl;
-			if (DEBUG)
-				cout << "|____·| |_____|" << endl;
 			trayectoriaIzq();
 			break;
 		case st_recto:
-			//cout << "Recto" << endl;
-			if (DEBUG)
-				cout << "|_____|·|_____|" << endl;
 			avanza();
 			break;
+			
 		case st_trayder:
-			//cout << "Trayectoria Derecha" << endl;
-			if (DEBUG)
-				cout << "|_____| |·____|" << endl;
 			trayectoriaDer();
 			break;
+			
 		case st_der:
-			//cout << "Rota Derecha" << endl;
-			if (DEBUG)
-				cout << "|_____| |____·|" << endl;
 			rotaDcha();
 			break;
+			
 		case st_encontrado:
-			if (DEBUG)
-				cout << "Encontrado" << endl;
 			avanza();
 			usleep(5000000);
+			parar();
 			break;
 	}
-	return total;
 }
 
-static void buscaObjetivo(t_Coordenada & actual, t_Coordenada objetivo) {
+// Recorre la lista de objetos capturada, convierte pixeles a cm y devuelve el punto mas cercano
+void buscaPuntoCercano(list<t_Coordenada> objetos, int cuadrante, t_DatoVision &punto) {
 	
-	t_EstadoBusca estado, ultimo;
-	t_Coordenada actual, anterior;
-    int x, y, ultX, ultY;
-    x = actual.pos_x;
-    y = actual.pos_y;
-    
-	estado = calculaEstado(x, y, ultimo);
-	ultimo = st_recto;
-    
-    while(estado != st_encontrado){
-
-	    if (DEBUG)
-			cout << "X " << x << "\tY " << y << endl;
-	    
-	    if(estado == st_perdido){
-			if (DEBUG)
-				cout << "Perdido\t";
-			ultimo = calculaEstado(ultX, ultY, ultimo);
-			ejecuta(ultimo);
-		}else{
-			ejecuta(estado);
-			ultX = x;	
-			ultY = y;
-    		ultimo = estado;
+	int size = objetos.size();
+	t_Coordenada obj;
+	punto.cuadrante = cuadrante;
+	
+	for (int i = 0; i < size; i++) {
+		obj = objetos.front();
+		objetos.pop_front();
+		// TODO: llamar a la funcion que convierte t_Coordenada a cm.
+		obj.distancia = pxToCm(punto.coordenada.x, punto.coordenada.y);
+		punto.distancia = pxToCm(obj.x, obj.y);
+		if (obj.distancia < punto.distancia) {
+			punto.distancia = obj.distancia;
+			punto.coordenada.x = obj.x;
+			punto.coordenada.y = obj.y;
 		}
-
-		x = actual.pos_x;
-	    y = actual.pos_y;
-
-    	estado = calculaEstado(x, y, ultimo);
-    }
+	}
 }
 
-void orientarse(t_Coordenada objActual, t_Coordenada objOrigen, t_Coordenada objDestino){
-	int angulo = obtenerAngulo(objOrigen.pos_x, objOrigen.pos_y, 
-								objActual.pos_x, objActual.pos_y,
-								objDestino.pos_x, objDestino.pos_y);
-	//~ girarAngulo(angulo);
+void visitaPunto() {
+	bool visitado = false;
+	t_Coordenada obj;
+	t_EstadoBusca st, ultSt;
+	
+	wihle (!visitado) {
+		// determino la pos x,y del objeto que esta viendo la camara
+		trackObject(obj);
+		
+		// Calculo el estado al que tengo que ir
+		ultSt = st_recto;
+		st = calculaEstado( obj.x, obj.y, ultSt);
+		
+		// Ejecuto la accion del robot segun el estado
+		switch(st) {
+			case st_izq:
+				rotaIzq();
+				break;				
+			case st_trayizq:
+				trayectoriaIzq();
+				break;
+			case st_recto:
+				avanza();
+				break;				
+			case st_trayder:
+				trayectoriaDer();
+				break;				
+			case st_der:
+				rotaDcha();
+				break;				
+			case st_encontrado: // Una vez visitado, salgo de la funcion
+				avanza();
+				usleep(5000000);
+				parar();
+				visitado = true;
+				break;
+		}
+		
+		// Actualizo el ultimo estado
+		ultSt = st;
+	}
 }
 
-static int busquedaInicial(t_DatosCamara & datosCamara, queue<t_Coordenada> & camino){
-	int numGiros = 0, totalObjetivos = 0;
-	t_Coordenada punto;
-	while(numGiros < totalGiros){
-		while(!datosCamara.cola.empty()){
-			punto = cmToMapa(pxToCm(datosCamara.cola.top()), posActual);
-			if(!existePunto(punto)){
-				camino.push(punto);
-				totalObjetivos++;
+int run() {
+    
+    list<t_Coordenada> objetos;
+    t_DatoVision masCercano;
+    masCercano.coordenada.x = 0;
+    masCercano.coordenada.y = 0;
+    masCercano.cudrante = 0;
+    masCercano.distancia = INF;
+
+	t_GlobalSt estado = st_buscaPuto;
+	
+	while (true) {
+		
+		// En este estado se hace la busqueda del objeto al que se va a visitar
+		if (estado == st_buscaPuto) {
+			for (int i = 0; i < NUM_CUADRANTES; i++) {
+				captura(objetos); // devuelve una lista de objetos
+				buscaPuntoCercano(objetos, i, masCercano); // determino cual es el objeto mas cercano
+				// TODO: giraFoto() tendra que conocer cual es el objeto a visitar
+				// para determinar cual va a ser la direccion del giro
+				giraFoto(); // giro hasta donde esta el punto que quiero visitar
 			}
-			datosCamara.cola.pop();
+			estado = st_visitaPunto;
+		} // en este estado se realiza la visita al objeto
+		else if (estado == st_visitaPunto) {
+			// se llama a una funcion que realice el tracking de un
+			// solo objeto (no hay que usar captura)
+			visitaPunto();
+			estado = st_buscaPuto;
+			masCercano.distancia = INF;
 		}
-		giraFoto();//Saber cuanto girar de cada vez, así sabremos cuantas tandas hacer
-		numGiros++;
 	}
-	return totalObjetivos;
-}
-
-static void todosEncontrados(){
-	for(int i=0; i<5; i++){
-		rotaDcha();
-		usleep(350000);
-		rotaIzq();
-		usleep(350000);
-	}
-	parar();
-	usleep(5000000);
-}
-
-void run(const t_DatosCamara & datosCamara, t_Encoder & datosEncIzq, t_Encoder & datosEncDer){
-	t_Estado estado = st_inicial;
-	t_Coordenada objActual, objOrigen, objDestino, aux;
-	int totalObjetivos = 0, numObjetivos = 0;
-	Queue<t_Coordenada> camino;
-
-	objOrigen.pos_x = 50;
-	objOrigen.pos_y = 50;
-	objActual.pos_x = 50;
-	objActual.pos_y = 50;
-
-	posActual.coordenada.pos_x = 50;
-	posActual.coordenada.pos_y = 50;
-	posActual.dir = derecha;
-	posActual.angulo = 0;
-
-	do{
-		switch(estado){
-			case st_inicial:
-				totalObjetivos = busquedaInicial(&datosCamara.coordenadas, &camino);
-				estado = st_caminos;
-				break;
-			case st_caminos:
-				camino = generaCamino(camino);
-				estado = st_next;
-				break;
-			case st_next:
-				objDestino = camino.top();
-				estado = st_orienta;
-				break;
-			case st_orienta:
-				if(objOrigen == objActual){
-					aux.pos_x = 40; //Como la situacion inicial es mirando a la derecha, me invento un punto origen que este antes del 50,50 a la izquierda
-					aux.pos_y = 50;//Tener cuidado con la direccion hacia la que nos quedamos mirando despues de inicial
-					orientarse(objOrigen, aux, objDestino);
-				}else
-					orientarse(objActual, objOrigen, objDestino);
-				estado = st_busca;
-				break;
-			case st_busca:
-				objOrigen = objActual;
-				objActual = objDestino;
-				buscaObjetivo(&datosCamara.coordenadas, objDestino);
-				camino.pop();
-				numObjetivos++;
-				estado = st_next;
-				break;
-		}
-	}while(numObjetivos < totalObjetivos);
-
-	todosEncontrados();
+	
 }

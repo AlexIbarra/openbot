@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unistd.h>
 #include <wiringPi.h>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -28,3 +29,9 @@ void rotaDcha();
 void trayectoriaIzq();
 
 void trayectoriaDer();
+
+void vuelta();
+
+void giraFoto();
+
+void vueltaRapida();
