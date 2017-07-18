@@ -1,4 +1,5 @@
 #!/bin/bash
+#Parar las ruedas
 gpio -g mode 18 pwm
 gpio -g mode 13 pwm
 gpio pwm-ms 
