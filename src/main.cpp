@@ -12,6 +12,12 @@ int main( void ) {
     iniciaNavegacion();
 
 	run();
+	//~ t_Coordenada obj;
+	//~ while(true)
+	//~ {
+		//~ trackObject(obj);
+		//~ cout << "x= " << obj.x << " y= " << obj.y << endl;
+	//~ }
 
     return 0;
 }

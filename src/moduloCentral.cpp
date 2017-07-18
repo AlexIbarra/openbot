@@ -3,49 +3,66 @@
 #include <vector>
 #include <mosquitto.h>
 #include "moduloMotor.h"
-#include "moduloBroker.h"
 #include "moduloCentral.h"
 #include "moduloCamara.h"
 #include "moduloNavegacion.h"
 
+#define DEBUG 1
+
 
 t_EstadoBusca calculaEstado( int x, int y, t_EstadoBusca ultSt) {
 	if(y>=440 && x >= 100 && x <= 540) {
+		if(DEBUG)
+			cout << "st_encontrado" << endl;
 		return st_encontrado;
 	}
 	else if (x >= 0 && x < 100) {
+		if(DEBUG)
+			cout << "st_izq" << endl;
 		return st_izq;
 	}
 	else if (x >=100 && x < 250) {
+		if(DEBUG)
+			cout << "st_trayizq" << endl;
 		return st_trayizq;
 	}
 	else if (x >=200 && x <= 390) {
+		if(DEBUG)
+			cout << "st_recto" << endl;
 		return st_recto;
 	}
 	else if (x > 390 && x <= 540) {
+		if(DEBUG)
+			cout << "st_trayder" << endl;
 		return st_trayder;
 	}
 	else if (x > 540 && x <= 640) {
+		if(DEBUG)
+			cout << "st_der" << endl;
 		return st_der;
 	}
-	else if (x == -1 && y == -1 && ultSt != st_inicial) {
+	else if (x == -1 && y == -1 && ultSt != st_buscaPuto) {
+		if(DEBUG)
+			cout << "st_perdido" << endl;
 		return st_perdido;
 	}
 	else {
+		if(DEBUG)
+			cout << "ultSt" << endl;
 		return ultSt;
 	}
 }
 
-void ejecuta() {
-	int totalGiros = 6;
-	int giros = 0, i, distancia_minima = 500; //Una distancia muy grande para que cualquier punto sea mejor
-	t_Coordenada coordenada;
+//~ void ejecuta() {
+	//~ int totalGiros = 6;
+	//~ int giros = 0, i, distancia_minima = 500; //Una distancia muy grande para que cualquier punto sea mejor
+	//~ t_Coordenada coordenada;
 	//~ t_EstadoInicial punto_aux, punto_objetivo;
 	//~ vector<t_EstadoInicial> puntos;
 	//~ vector<int> distancias;
 	//~ t_Punto punto;
-	
-	switch(st) {
+	//~ 
+	//~ switch(st) {
 		//~ case st_inicial:
 			//~ //rotaIzq();
 			//~ 
@@ -100,51 +117,51 @@ void ejecuta() {
 			//~ sleep(5);
 			//~ 
 		//~ break;
-			
-		case st_izq:
-			rotaIzq();
-			break;
-			
-		case st_trayizq:
-			trayectoriaIzq();
-			break;
-		case st_recto:
-			avanza();
-			break;
-			
-		case st_trayder:
-			trayectoriaDer();
-			break;
-			
-		case st_der:
-			rotaDcha();
-			break;
-			
-		case st_encontrado:
-			avanza();
-			usleep(5000000);
-			parar();
-			break;
-	}
-}
+			//~ 
+		//~ case st_izq:
+			//~ rotaIzq();
+			//~ break;
+			//~ 
+		//~ case st_trayizq:
+			//~ trayectoriaIzq();
+			//~ break;
+		//~ case st_recto:
+			//~ avanza();
+			//~ break;
+			//~ 
+		//~ case st_trayder:
+			//~ trayectoriaDer();
+			//~ break;
+			//~ 
+		//~ case st_der:
+			//~ rotaDcha();
+			//~ break;
+			//~ 
+		//~ case st_encontrado:
+			//~ avanza();
+			//~ usleep(5000000);
+			//~ parar();
+			//~ break;
+	//~ }
+//~ }
 
 // Recorre la lista de objetos capturada, convierte pixeles a cm y devuelve el punto mas cercano
 void buscaPuntoCercano(list<t_Coordenada> objetos, int cuadrante, t_DatoVision &punto) {
 	
 	int size = objetos.size();
+	int dist;
 	t_Coordenada obj;
-	punto.cuadrante = cuadrante;
 	
 	for (int i = 0; i < size; i++) {
 		obj = objetos.front();
 		objetos.pop_front();
 		// TODO: llamar a la funcion que convierte t_Coordenada a cm.
-		obj.distancia = pxToCm(punto.coordenada.x, punto.coordenada.y);
-		punto.distancia = pxToCm(obj.x, obj.y);
-		if (obj.distancia < punto.distancia) {
-			punto.distancia = obj.distancia;
+		dist = distancia(INIT_X_PX, INIT_Y_PX, obj.x, obj.y);
+		if (dist < punto.distancia) {
+			punto.distancia = dist;
 			punto.coordenada.x = obj.x;
 			punto.coordenada.y = obj.y;
+			punto.cuadrante = cuadrante;
 		}
 	}
 }
@@ -153,13 +170,14 @@ void visitaPunto() {
 	bool visitado = false;
 	t_Coordenada obj;
 	t_EstadoBusca st, ultSt;
+	ultSt = st_recto;
 	
-	wihle (!visitado) {
+	while (!visitado) {
 		// determino la pos x,y del objeto que esta viendo la camara
+		// TODO: probar si va lento para lanzar en otro hilo
 		trackObject(obj);
 		
 		// Calculo el estado al que tengo que ir
-		ultSt = st_recto;
 		st = calculaEstado( obj.x, obj.y, ultSt);
 		
 		// Ejecuto la accion del robot segun el estado
@@ -196,9 +214,9 @@ int run() {
     
     list<t_Coordenada> objetos;
     t_DatoVision masCercano;
-    masCercano.coordenada.x = 0;
-    masCercano.coordenada.y = 0;
-    masCercano.cudrante = 0;
+    masCercano.coordenada.x = INF;
+    masCercano.coordenada.y = INF;
+    masCercano.cuadrante = 0;
     masCercano.distancia = INF;
 
 	t_GlobalSt estado = st_buscaPuto;
@@ -219,6 +237,11 @@ int run() {
 		else if (estado == st_visitaPunto) {
 			// se llama a una funcion que realice el tracking de un
 			// solo objeto (no hay que usar captura)
+			for (int i = 0; i < masCercano.cuadrante; i++) {
+				giraFoto(); // giro hasta donde esta el punto que quiero visitar
+				if(DEBUG)
+					cout << "Girando a cuadrante " << i << endl;
+			}
 			visitaPunto();
 			estado = st_buscaPuto;
 			masCercano.distancia = INF;

@@ -44,6 +44,7 @@ void iniciaNavegacion(){
 
 }
 
+// si queremos trabajar con el encoder, nos vale para transformar de px a cm
 t_Punto pxToCm(int x_px, int y_px){
 
 	t_Punto salida;
@@ -76,11 +77,14 @@ t_Punto pxToCm(int x_px, int y_px){
 	return salida;
 }
 
-int distancia(int x1, int y1, int x2, int y2){
+// Si se trata de px no nunca serian valores negativos
+// si se quiere calcular en cm habria que hacer los calculos
+// en valor absoluto.
+int distancia(int x1, int y1, int x2, int y2) {
 	int dist = 0;
 	int c1, c2;
-	c1 = x2 - x1;
-	c2 = y2 - y1;
+	c1 = abs(x2 - x1);
+	c2 = abs(y2 - y1);
 	dist = sqrt(c1*c1 + c2*c2);
 	return dist;	
 }

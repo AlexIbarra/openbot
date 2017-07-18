@@ -36,6 +36,9 @@ el modulo funcional primero, solo es añadir a mano mas valores tomados a las fu
 *
 */
 
+#define INIT_X_PX 320 
+#define INIT_Y_PX 480
+
 //Tipo que se devuelve en la función "pxToCm", que devuelve x e y en centímetros.
 typedef struct{
 	int x;

@@ -6,7 +6,6 @@
 #include "moduloCamara.h"
 #include <stdio.h>
 #include <vector>
-#include <list>
 
 using namespace cv;
 using namespace std;
@@ -64,13 +63,14 @@ void applyClosing(Mat &threshold, int obj_radius) {
 	//erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
 }
 
-int trackObject(t_Coordenada &object) {
+void trackObject(t_Coordenada &object) {
+	
+	cout << "CtrackObject Entramos" << endl;
 	
 	VideoCapture cap(0); //capture the video from webcam
 
     if ( !cap.isOpened() ) { // if not success, exit program
         cout << "Cannot open the web cam" << endl;
-        return -1;
     }
     
     Mat imgOriginal, imgGray, imgThresholded, imgNormalized;
@@ -83,7 +83,6 @@ int trackObject(t_Coordenada &object) {
 
 	if (!bSuccess) {
 		cout << "Cannot read a frame from video stream" << endl;
-		return -1;
 	}                                              	
 						  
 	/* 
@@ -102,8 +101,8 @@ int trackObject(t_Coordenada &object) {
 	 */
 	excessOfColourThreshold(imgOriginal, imgGray, values);
 	
-	applyOpening(imgGray, 2);
-	applyClosing(imgGray, 2);		
+	//~ applyOpening(imgGray, 2);
+	//~ applyClosing(imgGray, 2);		
 
 	/* Normalizamos histograma de la imagen en escala de grises */
 	normalize(imgGray, imgNormalized, 0, 255, NORM_MINMAX);
@@ -124,14 +123,18 @@ int trackObject(t_Coordenada &object) {
 
 	// if the area <= 10000, I consider that the there are no object 
 	// in the image and it's because of the noise, the area is not zero 
-	if (area > MIN_OBJECT_AREA && area < MAX_OBJECT_AREA) {
+	if (area > 10000) {
 		//calculate the position of the ball
 		object.x = dM10 / area;
-		object.y = dM01 / area;	
+		object.y = dM01 / area;
+		
+		//~ circle(imgOriginal, Point(object.x, object.y), 10, Scalar(255, 0, 0));
 	}
+	//~ imshow("Window", imgThresholded);
+	//~ waitKey(10);
 }
 
-void detectMultiObject(Object theObject,Mat threshold, Mat &cameraFeed, list<Object> &objects) {
+void detectMultiObject(Mat threshold, Mat &cameraFeed, list<t_Coordenada> &objects) {
 
     //~ vector <Object> objects;
     Mat temp;
@@ -146,7 +149,7 @@ void detectMultiObject(Object theObject,Mat threshold, Mat &cameraFeed, list<Obj
         
     double refArea = 0;
     bool objectFound = false;
-    Object object;
+    t_Coordenada object;
     
     if (hierarchy.size() > 0) {
         
@@ -164,8 +167,8 @@ void detectMultiObject(Object theObject,Mat threshold, Mat &cameraFeed, list<Obj
                 //iteration and compare it to the area in the next iteration.
                 if(area > MIN_OBJECT_AREA && area < MAX_OBJECT_AREA){
 
-                    object.setXPos(moment.m10/area);
-                    object.setYPos(moment.m01/area);
+                    object.x = moment.m10/area;
+                    object.y = moment.m01/area;
 
 					if(objects.size() > numObjects) {
 						objects.pop_front();
@@ -174,7 +177,7 @@ void detectMultiObject(Object theObject,Mat threshold, Mat &cameraFeed, list<Obj
                     objects.push_back(object);
 
                     objectFound = true;
-                    circle(cameraFeed, Point(object.getXPos(), object.getYPos()), 10, Scalar(255, 0, 0));
+                    //~ circle(cameraFeed, Point(object.getXPos(), object.getYPos()), 10, Scalar(255, 0, 0));
                 }
                 else {
                     objectFound = false;
@@ -190,7 +193,7 @@ void detectMultiObject(Object theObject,Mat threshold, Mat &cameraFeed, list<Obj
 	}
 }
 
-void excessOfColourThreshold(Mat cameraFeed, Mat &imgThresholded, const vector<float> &values) {
+void excessOfColourThreshold(Mat cameraFeed, Mat &imgThresholded, vector<float> &values) {
 	Mat M = Mat(1, 3, CV_32F); // 1x3 Matrix
 
 	M.at<float>(0, 0) = values[0];//0.0;
@@ -202,7 +205,7 @@ void excessOfColourThreshold(Mat cameraFeed, Mat &imgThresholded, const vector<f
 
 
 //Las inicializamos en el punto medio de la pantalla, para que no se muevan los motores de inicio
-int captura(list<Object> &objects) {
+int captura(list<t_Coordenada> &objects) {
 	
     VideoCapture cap(0); //capture the video from webcam
 
@@ -259,8 +262,7 @@ int captura(list<Object> &objects) {
 	threshold(imgNormalized, imgThresholded, 180, 255, THRESH_BINARY);        	
 	
 	/* Creamos una lista con todos los objetos detectados */
-	Object object;
-	detectMultiObject(object, imgThresholded, imgOriginal, objects);
+	detectMultiObject(imgThresholded, imgOriginal, objects);
 
 	return 0;
 }

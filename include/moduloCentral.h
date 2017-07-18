@@ -1,7 +1,9 @@
 #ifndef MODULOCENTRAL_H
 #define MODULOCENTRAL_H
+#include "moduloCamara.h"
+#include <list>
 
-typedef enum t_GlobalSt {st_buscaPuto, st_visitaPunto}
+typedef enum t_GlobalSt {st_buscaPuto, st_visitaPunto};
 typedef enum t_EstadoBusca {st_izq, st_der, st_trayizq, st_trayder, st_recto, st_encontrado, st_perdido};
 
 #define NUM_CUADRANTES 6

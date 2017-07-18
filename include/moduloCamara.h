@@ -1,9 +1,10 @@
 #ifndef MODULOCAMARA_H
 #define MODULOCAMARA_H
 
-#include "Object.h"
 #include <list>
-#include <queue>
+
+using namespace std;
+using namespace cv;
 
 #define FRAME_WIDTH 640
 #define FRAME_HEIGHT 480
@@ -16,14 +17,14 @@ typedef struct {
 		int y;
 } t_Coordenada;
 
-int captura(list<Object> &objects);
+int captura(list<t_Coordenada> &objects);
 void equalizeHistogram(Mat threshold, Mat &equalized);
-int trackObject(t_Coordenada &object)
-void detectMultiObject(Object theObject, Mat threshold, Mat &cameraFeed, list<Object> &objects);
-void excessOfColourThreshold(Mat cameraFeed, Mat &imgThresholded, const vector<int> &values);
+void trackObject(t_Coordenada &object);
+void detectMultiObject(Mat threshold, Mat &cameraFeed, list<t_Coordenada> &objects);
+void excessOfColourThreshold(Mat cameraFeed, Mat &imgThresholded, vector<float> &values);
 void thresholdOtsu(Mat threshold, Mat &otsu);
-void applyOpening(Mat &threshold, int obj_radius = 2);
-void applyClosing(Mat &threshold, int obj_radius = 2);
+void applyOpening(Mat &threshold, int obj_radius);
+void applyClosing(Mat &threshold, int obj_radius);
 
 
 #endif /* MODULOCAMARA_H */
