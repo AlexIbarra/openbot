@@ -12,6 +12,8 @@ int main( void ) {
     iniciaNavegacion();
 
 	run();
+	//visitaPunto();
+	
 	//~ t_Coordenada obj;
 	//~ while(true)
 	//~ {

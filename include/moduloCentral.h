@@ -1,6 +1,7 @@
 #ifndef MODULOCENTRAL_H
 #define MODULOCENTRAL_H
-#include "moduloCamara.h"
+//#include "moduloCamara.h"
+#include "moduloCamara_old.h"
 #include <list>
 
 typedef enum t_GlobalSt {st_buscaPuto, st_visitaPunto};
@@ -20,7 +21,7 @@ void ejecuta( int st);
 int run();
 void visitaPunto();
 void buscaPuntoCercano(list<t_Coordenada> objetos, int cuadrante, t_DatoVision &punto);
-
+void buscaPuntoCercano_old(t_Coordenada aux, int cuadrante, t_DatoVision &punto);
 
 #endif /* MODULOBROKER_H */
 

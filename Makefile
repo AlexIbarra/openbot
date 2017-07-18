@@ -11,8 +11,8 @@ EXEC = openbot
 
 all: $(EXEC)
 
-$(EXEC): $(OBJDIR)/main.o $(OBJDIR)/moduloMotor.o $(OBJDIR)/moduloCamara.o $(OBJDIR)/moduloCentral.o $(OBJDIR)/moduloNavegacion.o
-	$(CC) $(OBJDIR)/main.o $(OBJDIR)/moduloMotor.o $(OBJDIR)/moduloCamara.o $(OBJDIR)/moduloCentral.o $(OBJDIR)/moduloNavegacion.o -o $(BINDIR)/openbot $(LIBS)
+$(EXEC): $(OBJDIR)/main.o $(OBJDIR)/moduloMotor.o $(OBJDIR)/moduloCamara.o $(OBJDIR)/moduloCentral.o $(OBJDIR)/moduloNavegacion.o $(OBJDIR)/moduloCamara_old.o
+	$(CC) $(OBJDIR)/main.o $(OBJDIR)/moduloMotor.o $(OBJDIR)/moduloCamara.o $(OBJDIR)/moduloCentral.o $(OBJDIR)/moduloNavegacion.o $(OBJDIR)/moduloCamara_old.o -o $(BINDIR)/openbot $(LIBS)
 	
 $(OBJDIR)/main.o: $(SRCDIR)/main.cpp
 	$(CC) $(CFLAGS) -o $(OBJDIR)/main.o $(SRCDIR)/main.cpp -I$(INCDIR)
@@ -22,6 +22,9 @@ $(OBJDIR)/moduloMotor.o: $(SRCDIR)/moduloMotor.cpp
 	
 $(OBJDIR)/moduloCamara.o: $(SRCDIR)/moduloCamara.cpp
 	$(CC) $(CFLAGS) -o $(OBJDIR)/moduloCamara.o $(SRCDIR)/moduloCamara.cpp -I$(INCDIR)
+	
+$(OBJDIR)/moduloCamara_old.o: $(SRCDIR)/moduloCamara_old.cpp
+	$(CC) $(CFLAGS) -o $(OBJDIR)/moduloCamara_old.o $(SRCDIR)/moduloCamara_old.cpp -I$(INCDIR)
 			
 $(OBJDIR)/moduloCentral.o: $(SRCDIR)/moduloCentral.cpp
 	$(CC) $(CFLAGS) -o $(OBJDIR)/moduloCentral.o $(SRCDIR)/moduloCentral.cpp -I$(INCDIR)
