@@ -10,7 +10,27 @@
 using namespace cv;
 using namespace std;
 
+#define ExG 1
+#define ExR 2
 
+static void modifyChannels(vector<float> &channels, int excessType) {
+
+    if (excessType == ExG) {
+        channels[0] = -1.0; // Blue channel value
+        channels[1] = 2.0; // Green channel value
+        channels[2] = -1.0; // Red channel value
+    }
+    else if (excessType == ExR) {
+        channels[0] = 0.0; // Blue channel value
+        channels[1] = -1.0; // Green channel value
+        channels[2] = 1.44; // Red channel value
+    }
+    else {
+        channels[0] = 1.44; // Blue channel value
+        channels[1] = -1.0; // Green channel value
+        channels[2] = 0.0; // Red channel value
+    }
+}
 // Funcion de Ecualizacion de histograma para imagenes a color
 void equalizeHistogram(Mat threshold, Mat &equalized) {   
     /********* Ecualizacion de histograma *********/
@@ -63,11 +83,14 @@ void applyClosing(Mat &threshold, int obj_radius) {
 	//erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
 }
 
-void trackObject(t_Coordenada &object) {
+//void trackObject(t_Coordenada &object) {
+void *trackObject(void * obj) {
+    
+    t_Coordenada *object = (t_Coordenada *)obj;
 	
-	cout << "CtrackObject Entramos" << endl;
-	
-	VideoCapture cap(0); //capture the video from webcam
+    cout << "CtrackObject Entramos" << endl;
+
+    VideoCapture cap(0); //capture the video from webcam
 
     if ( !cap.isOpened() ) { // if not success, exit program
         cout << "Cannot open the web cam" << endl;
@@ -75,63 +98,66 @@ void trackObject(t_Coordenada &object) {
     
     Mat imgOriginal, imgGray, imgThresholded, imgNormalized;
 	
-	vector<Mat> channels;
-	
-	// TODO: Comprobar que funciona con un solo frame
-	
-	bool bSuccess = cap.read(imgOriginal);
+    vector<Mat> channels;
 
-	if (!bSuccess) {
-		cout << "Cannot read a frame from video stream" << endl;
-	}                                              	
-						  
-	/* 
-	 * Realizamos el filtrado de la imagen
-	 * para detectar los objetos 
-	 */
-	 
-	vector<float> values(3, 0.0);
-	values[0] = 0.0; // Blue channel value
-	values[1] = -1.0; // Green channel value
-	values[2] = 1.44; // Red channel value
-	 
-	/* 
-	 * Generamos imagen en escala de grises con los 
-	 * objetos detectados 
-	 */
-	excessOfColourThreshold(imgOriginal, imgGray, values);
-	
-	//~ applyOpening(imgGray, 2);
-	//~ applyClosing(imgGray, 2);		
+    // TODO: Comprobar que funciona con un solo frame
+    while(1) {
 
-	/* Normalizamos histograma de la imagen en escala de grises */
-	normalize(imgGray, imgNormalized, 0, 255, NORM_MINMAX);
-	
-	/* 
-	 * Generamos imagen binarizada (objetos en blanco y 
-	 * el resto de la imagenen negro)
-	 */
-	threshold(imgNormalized, imgThresholded, 180, 255, THRESH_BINARY);
-	
-	
-	Moments oMoments = moments(imgThresholded);
+        bool bSuccess = cap.read(imgOriginal);
 
-	double dM01 = oMoments.m01;
-	double dM10 = oMoments.m10;
-	double area = oMoments.m00;
-	
+        if (!bSuccess) {
+                cout << "Cannot read a frame from video stream" << endl;
+        }                                              	
 
-	// if the area <= 10000, I consider that the there are no object 
-	// in the image and it's because of the noise, the area is not zero 
-	if (area > 10000) {
-		//calculate the position of the ball
-		object.x = dM10 / area;
-		object.y = dM01 / area;
-		
-		//~ circle(imgOriginal, Point(object.x, object.y), 10, Scalar(255, 0, 0));
-	}
-	//~ imshow("Window", imgThresholded);
-	//~ waitKey(10);
+        /* 
+         * Realizamos el filtrado de la imagen
+         * para detectar los objetos 
+         */
+        vector<float> values(3, 0.0);
+        modifyChannels(values, ExG);
+        
+
+        /* 
+         * Generamos imagen en escala de grises con los 
+         * objetos detectados 
+         */
+        excessOfColourThreshold(imgOriginal, imgGray, values);
+
+        applyOpening(imgGray, 2);
+        applyClosing(imgGray, 2);		
+
+        /* Normalizamos histograma de la imagen en escala de grises */
+        normalize(imgGray, imgNormalized, 0, 255, NORM_MINMAX);
+
+        /* 
+         * Generamos imagen binarizada (objetos en blanco y 
+         * el resto de la imagenen negro)
+         */
+        threshold(imgNormalized, imgThresholded, 180, 255, THRESH_BINARY);
+
+
+        Moments oMoments = moments(imgThresholded);
+
+        double dM01 = oMoments.m01;
+        double dM10 = oMoments.m10;
+        double area = oMoments.m00;
+
+
+        // if the area <= 10000, I consider that the there are no object 
+        // in the image and it's because of the noise, the area is not zero 
+//        cout << "AREA: " << area << endl;
+        if (area > 10000 && area <= 1500000) {
+            //calculate the position of the ball
+            object->x = dM10 / area;
+            object->y = dM01 / area;
+
+//            circle(imgOriginal, Point(object->x, object->y), 10, Scalar(255, 0, 0));
+        }
+//        imshow("Thresholdede", imgThresholded);
+//        imshow("Original", imgOriginal);
+//        imshow("Excess of red", imgGray);
+//        waitKey(30);
+    }
 }
 
 void detectMultiObject(Mat threshold, Mat &cameraFeed, list<t_Coordenada> &objects) {
@@ -161,23 +187,20 @@ void detectMultiObject(Mat threshold, Mat &cameraFeed, list<t_Coordenada> &objec
                 Moments moment = moments((cv::Mat)contours[index]);//use moments method to find our filtered object
                 double area = moment.m00;
 
-                //if the area is less than 20 px by 20px then it is probably just noise
-                //if the area is the same as the 3/2 of the image size, probably just a bad filter
-                //we only want the object with the largest area so we safe a reference area each
-                //iteration and compare it to the area in the next iteration.
-                if(area > MIN_OBJECT_AREA && area < MAX_OBJECT_AREA){
+                cout << "AREA: " << area << endl;
+                if(area > MIN_OBJECT_AREA && area <= MAX_OBJECT_AREA){
 
                     object.x = moment.m10/area;
                     object.y = moment.m01/area;
 
-					if(objects.size() > numObjects) {
-						objects.pop_front();
-					}
+                    if(objects.size() > numObjects) {
+                        objects.pop_front();
+                    }
 					
                     objects.push_back(object);
-
                     objectFound = true;
-                    //~ circle(cameraFeed, Point(object.getXPos(), object.getYPos()), 10, Scalar(255, 0, 0));
+                    
+                    circle(cameraFeed, Point(object.x, object.y), 10, Scalar(255, 0, 0));
                 }
                 else {
                     objectFound = false;
@@ -189,8 +212,8 @@ void detectMultiObject(Mat threshold, Mat &cameraFeed, list<t_Coordenada> &objec
         }
     }
     else {
-		objects.clear();
-	}
+        objects.clear();
+    }
 }
 
 void excessOfColourThreshold(Mat cameraFeed, Mat &imgThresholded, vector<float> &values) {
@@ -203,10 +226,12 @@ void excessOfColourThreshold(Mat cameraFeed, Mat &imgThresholded, vector<float> 
 	transform(cameraFeed, imgThresholded, M);
 }
 
-
 //Las inicializamos en el punto medio de la pantalla, para que no se muevan los motores de inicio
-int captura(list<t_Coordenada> &objects) {
+//int captura(list<t_Coordenada> &objects) {
+void *captura(void *objects) {
 	
+    t_List *list = (t_List *)objects;
+    
     VideoCapture cap(0); //capture the video from webcam
 
     if ( !cap.isOpened() ) { // if not success, exit program
@@ -220,49 +245,54 @@ int captura(list<t_Coordenada> &objects) {
     //Create a black image with the size as the camera output
     Mat imgLines = Mat::zeros( imgTmp.size(), CV_8UC3 );
             
-	Mat imgOriginal, imgGray, imgThresholded, imgNormalized;
-	
-	vector<Mat> channels;
-	
-	// TODO: Comprobar que funciona con un solo frame
-	
-	bool bSuccess = cap.read(imgOriginal);
+    Mat imgOriginal, imgGray, imgThresholded, imgNormalized;
 
-	if (!bSuccess) {
-		cout << "Cannot read a frame from video stream" << endl;
-		return -1;
-	}                                              	
-						  
-	/* 
-	 * Realizamos el filtrado de la imagen
-	 * para detectar los objetos 
-	 */
-	 
-	vector<float> values(3, 0.0);
-	values[0] = 0.0; // Blue channel value
-	values[1] = -1.0; // Green channel value
-	values[2] = 1.44; // Red channel value
-	 
-	/* 
-	 * Generamos imagen en escala de grises con los 
-	 * objetos detectados 
-	 */
-	excessOfColourThreshold(imgOriginal, imgGray, values);
-	
-	applyOpening(imgGray, 2);
-	applyClosing(imgGray, 2);		
+    vector<Mat> channels;
 
-	/* Normalizamos histograma de la imagen en escala de grises */
-	normalize(imgGray, imgNormalized, 0, 255, NORM_MINMAX);
-	
-	/* 
-	 * Generamos imagen binarizada (objetos en blanco y 
-	 * el resto de la imagenen negro)
-	 */
-	threshold(imgNormalized, imgThresholded, 180, 255, THRESH_BINARY);        	
-	
-	/* Creamos una lista con todos los objetos detectados */
-	detectMultiObject(imgThresholded, imgOriginal, objects);
+    // TODO: Comprobar que funciona con un solo frame
 
-	return 0;
+    while(1) {
+        bool bSuccess = cap.read(imgOriginal);
+
+        if (!bSuccess) {
+                cout << "Cannot read a frame from video stream" << endl;
+//                return -1;
+        }                                              	
+
+        /* 
+         * Realizamos el filtrado de la imagen
+         * para detectar los objetos 
+         */
+
+        vector<float> values(3, 0.0);
+        modifyChannels(values, ExR);
+
+        /* 
+         * Generamos imagen en escala de grises con los 
+         * objetos detectados 
+         */
+        excessOfColourThreshold(imgOriginal, imgGray, values);
+
+        applyOpening(imgGray, 2);
+        applyClosing(imgGray, 2);		
+
+        /* Normalizamos histograma de la imagen en escala de grises */
+        normalize(imgGray, imgNormalized, 0, 255, NORM_MINMAX);
+
+        /* 
+         * Generamos imagen binarizada (objetos en blanco y 
+         * el resto de la imagenen negro)
+         */
+        threshold(imgNormalized, imgThresholded, 180, 255, THRESH_BINARY);        	
+
+        /* Creamos una lista con todos los objetos detectados */
+        detectMultiObject(imgThresholded, imgOriginal, list->objects);
+
+        imshow("Thresholdede", imgThresholded);
+        imshow("Original", imgOriginal);
+        imshow("Excess of green", imgGray);
+        waitKey(30);
+    }
+
+//    return 0;
 }

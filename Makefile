@@ -2,6 +2,7 @@ CC = g++
 CFLAGS = -c -ggdb -Wall -Wno-unused-variable
 BASEDIR = $(shell pwd)
 OBJDIR = $(BASEDIR)/obj
+OBJ = $(OBJDIR)/main.o $(OBJDIR)/moduloMotor.o $(OBJDIR)/moduloCamara.o $(OBJDIR)/moduloCentral.o $(OBJDIR)/moduloNavegacion.o $(OBJDIR)/gpioAccess.o $(OBJDIR)/moduloCamara_old.o
 BINDIR = $(BASEDIR)/bin
 INCDIR = $(BASEDIR)/include
 SRCDIR = $(BASEDIR)/src
@@ -11,8 +12,8 @@ EXEC = openbot
 
 all: $(EXEC)
 
-$(EXEC): $(OBJDIR)/main.o $(OBJDIR)/moduloMotor.o $(OBJDIR)/moduloCamara.o $(OBJDIR)/moduloCentral.o $(OBJDIR)/moduloNavegacion.o $(OBJDIR)/moduloCamara_old.o
-	$(CC) $(OBJDIR)/main.o $(OBJDIR)/moduloMotor.o $(OBJDIR)/moduloCamara.o $(OBJDIR)/moduloCentral.o $(OBJDIR)/moduloNavegacion.o $(OBJDIR)/moduloCamara_old.o -o $(BINDIR)/openbot $(LIBS)
+$(EXEC): $(OBJ)
+	$(CC) $(OBJ) -o $(BINDIR)/openbot $(LIBS)
 	
 $(OBJDIR)/main.o: $(SRCDIR)/main.cpp
 	$(CC) $(CFLAGS) -o $(OBJDIR)/main.o $(SRCDIR)/main.cpp -I$(INCDIR)
@@ -31,6 +32,9 @@ $(OBJDIR)/moduloCentral.o: $(SRCDIR)/moduloCentral.cpp
 	
 $(OBJDIR)/moduloNavegacion.o: $(SRCDIR)/moduloNavegacion.cpp
 	$(CC) $(CFLAGS) -o $(OBJDIR)/moduloNavegacion.o $(SRCDIR)/moduloNavegacion.cpp -I$(INCDIR)
+	
+$(OBJDIR)/gpioAccess.o: $(SRCDIR)/gpioAccess.cpp
+	$(CC) $(CFLAGS) -o $(OBJDIR)/gpioAccess.o $(SRCDIR)/gpioAccess.cpp -I$(INCDIR)
 	
 
 .PHONY:clean

@@ -3,9 +3,6 @@
 #include <iostream>
 #include <cmath.h>
 #include <wiringPi.h>
-#include <mosquitto.h>
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
 #include "moduloEncoder.h"
 
 #define DEBUG 0
