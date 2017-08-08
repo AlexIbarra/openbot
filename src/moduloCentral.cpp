@@ -161,12 +161,12 @@ int run() {
     masCercano.cuadrante = 0;
     masCercano.distancia = INF;
 
-	t_GlobalSt estado = st_buscaPuto;
+	t_GlobalSt estado = st_buscaPunto;
 	
 	while (true) {
 		
 		// En este estado se hace la busqueda del objeto al que se va a visitar
-		if (estado == st_buscaPuto) {
+		if (estado == st_buscaPunto) {
 			for (int i = 0; i < NUM_CUADRANTES; i++) {
 				
 				//NEW
@@ -202,7 +202,7 @@ int run() {
 					cout << "Girando a cuadrante " << i << endl;
 			}
 			visitaPunto();
-			estado = st_buscaPuto;
+			estado = st_buscaPunto;
 			masCercano.distancia = INF;
 		}
 	}
