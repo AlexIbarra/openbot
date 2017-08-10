@@ -82,7 +82,6 @@ void applyClosing(Mat &threshold, int obj_radius) {
 	//dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
 	//erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
 }
-
 //void trackObject(t_Coordenada &object) {
 void *trackObject(void * obj) {
     
@@ -145,18 +144,18 @@ void *trackObject(void * obj) {
 
         // if the area <= 10000, I consider that the there are no object 
         // in the image and it's because of the noise, the area is not zero 
-//        cout << "AREA: " << area << endl;
+        cout << "AREA: " << area << endl;
         if (area > 10000 && area <= 1500000) {
             //calculate the position of the ball
             object->x = dM10 / area;
             object->y = dM01 / area;
 
-//            circle(imgOriginal, Point(object->x, object->y), 10, Scalar(255, 0, 0));
+            //~ circle(imgOriginal, Point(object->x, object->y), 10, Scalar(255, 0, 0));
         }
-//        imshow("Thresholdede", imgThresholded);
-//        imshow("Original", imgOriginal);
-//        imshow("Excess of red", imgGray);
-//        waitKey(30);
+        //~ imshow("Thresholdede", imgThresholded);
+        //~ imshow("Original", imgOriginal);
+        //~ imshow("Excess of red", imgGray);
+        //~ waitKey(30);
     }
 }
 
@@ -182,12 +181,13 @@ void detectMultiObject(Mat threshold, Mat &cameraFeed, list<t_Coordenada> &objec
         int numObjects = hierarchy.size();
         
         if(numObjects < MAX_NUM_OBJECTS){//if number of objects greater than MAX_NUM_OBJECTS we have a noisy filter
+			//~ cout << "Objetos: " << numObjects << endl;
             for (int index = 0; index >= 0; index = hierarchy[index][0]) {
 
                 Moments moment = moments((cv::Mat)contours[index]);//use moments method to find our filtered object
                 double area = moment.m00;
 
-                cout << "AREA: " << area << endl;
+                //~ cout << "AREA: " << area << endl;
                 if(area > MIN_OBJECT_AREA && area <= MAX_OBJECT_AREA){
 
                     object.x = moment.m10/area;
@@ -200,16 +200,16 @@ void detectMultiObject(Mat threshold, Mat &cameraFeed, list<t_Coordenada> &objec
                     objects.push_back(object);
                     objectFound = true;
                     
-                    circle(cameraFeed, Point(object.x, object.y), 10, Scalar(255, 0, 0));
+                    //~ circle(cameraFeed, Point(object.x, object.y), 10, Scalar(255, 0, 0));
                 }
                 else {
                     objectFound = false;
                 }
             }            
         }
-        else {
-            putText(cameraFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
-        }
+        //~ else {
+            //~ putText(cameraFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
+        //~ }
     }
     else {
         objects.clear();
@@ -251,7 +251,7 @@ void *captura(void *objects) {
 
     // TODO: Comprobar que funciona con un solo frame
 
-    while(1) {
+    //~ while(1) {
         bool bSuccess = cap.read(imgOriginal);
 
         if (!bSuccess) {
@@ -265,7 +265,7 @@ void *captura(void *objects) {
          */
 
         vector<float> values(3, 0.0);
-        modifyChannels(values, ExR);
+        modifyChannels(values, ExG);
 
         /* 
          * Generamos imagen en escala de grises con los 
@@ -288,11 +288,11 @@ void *captura(void *objects) {
         /* Creamos una lista con todos los objetos detectados */
         detectMultiObject(imgThresholded, imgOriginal, list->objects);
 
-        imshow("Thresholdede", imgThresholded);
-        imshow("Original", imgOriginal);
-        imshow("Excess of green", imgGray);
-        waitKey(30);
-    }
+        //~ imshow("Thresholdede", imgThresholded);
+        //~ imshow("Original", imgOriginal);
+        //~ imshow("Excess of green", imgGray);
+        //~ waitKey(10);
+    //~ }
 
 //    return 0;
 }

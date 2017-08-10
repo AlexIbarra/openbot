@@ -1,17 +1,12 @@
 #include <unistd.h>
 #include <wiringPi.h>
 #include <vector>
-#include <mosquitto.h>
 #include "moduloMotor.h"
 #include "moduloCentral.h"
-//NEW
-//#include "moduloCamara.h"
-//OLD
-#include "moduloCamara_old.h"
-
+#include "moduloCamara.h"
 #include "moduloNavegacion.h"
-
 #include <pthread.h>
+#include <signal.h>
 
 #define DEBUG 1
 
@@ -47,7 +42,7 @@ t_EstadoBusca calculaEstado( int x, int y, t_EstadoBusca ultSt) {
 			cout << "st_der" << endl;
 		return st_der;
 	}
-	else if (x == -1 && y == -1 && ultSt != st_buscaPuto) {
+	else if (x == -1 && y == -1 && ultSt != st_buscaPunto) {
 		if(DEBUG)
 			cout << "st_perdido" << endl;
 		return st_perdido;
@@ -65,7 +60,6 @@ void buscaPuntoCercano(list<t_Coordenada> objetos, int cuadrante, t_DatoVision &
 	int size = objetos.size();
 	int dist;
 	t_Coordenada obj;
-	
 	for (int i = 0; i < size; i++) {
 		obj = objetos.front();
 		objetos.pop_front();
@@ -100,11 +94,17 @@ void visitaPunto() {
 	t_Coordenada obj;
 	t_EstadoBusca st, ultSt;
 	ultSt = st_recto;
+	pthread_t th1 = 1;
+	int rc;
 	
 	//pthread_t thread1 = 1;
 	//int rc;
 	
-	//rc = pthread_create(&thread1, NULL, &trackObject, (void*)&obj);
+	rc = pthread_create(&th1, NULL, &trackObject, (void *)&obj);
+	if (rc != 0)
+	{
+		exit(1);
+	}
 	
 	while (!visitado) {
 		// determino la pos x,y del objeto que esta viendo la camara
@@ -113,8 +113,9 @@ void visitaPunto() {
 		//NEW
 		//trackObject(obj);
 		
+		
 		//OLD
-		captura(obj, 1);
+		//~ captura(obj, 1);
 		
 		cout << "Voy al punto: " << obj.x << "   " << obj.y << endl;
 		
@@ -143,6 +144,7 @@ void visitaPunto() {
 				usleep(5000000);
 				parar();
 				visitado = true;
+				pthread_kill(th1, SIGKILL);
 				break;
 		}
 		
@@ -153,35 +155,42 @@ void visitaPunto() {
 
 int run() {
     
-    list<t_Coordenada> objetos;
+    //~ list<t_Coordenada> objetos;
     t_DatoVision masCercano;
     t_Coordenada aux;
+    t_List list;
     masCercano.coordenada.x = INF;
     masCercano.coordenada.y = INF;
     masCercano.cuadrante = 0;
     masCercano.distancia = INF;
-
-	t_GlobalSt estado = st_buscaPunto;
+	t_EstadoBusca estado = st_buscaPunto;
+	int rc;
+	pthread_t th1 = 1;
 	
 	while (true) {
 		
+		//~ rc = pthread_create(&th1, NULL, &captura, (void *)&list);
+		//~ if (rc != 0)
+		//~ {
+			//~ exit(1);
+		//~ }
+		//~ sleep(5);
 		// En este estado se hace la busqueda del objeto al que se va a visitar
 		if (estado == st_buscaPunto) {
+			
 			for (int i = 0; i < NUM_CUADRANTES; i++) {
-				
-				//NEW
-				//captura(objetos); // devuelve una lista de objetos
-				
-				//OLD
-				//cout << "llamada a captura " << endl;
-				captura(aux, 5); // devuelve una lista de objetos
-				
+				for (int j=0; j<5; j++)
+				{
+					cout << "Captura: " << j << endl;
+					captura((void *)&list);
+					cout << "Tam lista: " << list.objects.size() << endl;
+				}
 				//NEW			
-				//buscaPuntoCercano(objetos, i, masCercano); // determino cual es el objeto mas cercano
+				buscaPuntoCercano(list.objects, i, masCercano); // determino cual es el objeto mas cercano
 				
 				//OLD
 				//cout << "llamada a busca punto " << endl;
-				buscaPuntoCercano_old(aux, i, masCercano); // determino cual es el objeto mas cercano
+				//~ buscaPuntoCercano_old(aux, i, masCercano); // determino cual es el objeto mas cercano
 				
 				// TODO: giraFoto() tendra que conocer cual es el objeto a visitar
 				// para determinar cual va a ser la direccion del giro
