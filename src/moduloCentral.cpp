@@ -94,17 +94,20 @@ void visitaPunto() {
 	t_Coordenada obj;
 	t_EstadoBusca st, ultSt;
 	ultSt = st_recto;
-	pthread_t th1 = 1;
-	int rc;
 	
-	//pthread_t thread1 = 1;
-	//int rc;
-	
-	rc = pthread_create(&th1, NULL, &trackObject, (void *)&obj);
-	if (rc != 0)
-	{
-		exit(1);
-	}
+	t_List list;
+	//~ list<t_Coordenada> objetos;
+	//~ pthread_t th1 = 1;
+	//~ int rc;
+	//~ 
+	//~ //pthread_t thread1 = 1;
+	//~ //int rc;
+	//~ 
+	//~ rc = pthread_create(&th1, NULL, &trackObject, (void *)&obj);
+	//~ if (rc != 0)
+	//~ {
+		//~ exit(1);
+	//~ }
 	
 	while (!visitado) {
 		// determino la pos x,y del objeto que esta viendo la camara
@@ -116,8 +119,14 @@ void visitaPunto() {
 		
 		//OLD
 		//~ captura(obj, 1);
-		
-		cout << "Voy al punto: " << obj.x << "   " << obj.y << endl;
+		captura((void *)&list);
+		if(list.objects.size()>0){
+			obj = list.objects.front();
+			//~ obj = objetos.front();
+			
+			list.objects.pop_front();
+		}
+			cout << "Voy al punto: " << obj.x << "   " << obj.y << endl;
 		
 		// Calculo el estado al que tengo que ir
 		st = calculaEstado( obj.x, obj.y, ultSt);
@@ -144,7 +153,7 @@ void visitaPunto() {
 				usleep(5000000);
 				parar();
 				visitado = true;
-				pthread_kill(th1, SIGKILL);
+				//~ pthread_kill(th1, SIGKILL);
 				break;
 		}
 		
@@ -164,8 +173,8 @@ int run() {
     masCercano.cuadrante = 0;
     masCercano.distancia = INF;
 	t_EstadoBusca estado = st_buscaPunto;
-	int rc;
-	pthread_t th1 = 1;
+	//~ int rc;
+	//~ pthread_t th1 = 1;
 	
 	while (true) {
 		
@@ -179,7 +188,7 @@ int run() {
 		if (estado == st_buscaPunto) {
 			
 			for (int i = 0; i < NUM_CUADRANTES; i++) {
-				for (int j=0; j<5; j++)
+				for (int j=0; j<3; j++)
 				{
 					cout << "Captura: " << j << endl;
 					captura((void *)&list);
@@ -196,6 +205,7 @@ int run() {
 				// para determinar cual va a ser la direccion del giro
 				giraFoto(); // giro hasta donde esta el punto que quiero visitar
 			}
+			giraFoto();
 			sleep(2);
 			estado = st_visitaPunto;
 			
