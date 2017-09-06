@@ -27,7 +27,7 @@ t_EstadoBusca calculaEstado( int x, int y, t_EstadoBusca ultSt) {
 			cout << "st_trayizq" << endl;
 		return st_trayizq;
 	}
-	else if (x >=200 && x <= 390) {
+	else if (x >=250 && x <= 390) {
 		if(DEBUG)
 			cout << "st_recto" << endl;
 		return st_recto;
