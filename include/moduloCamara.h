@@ -7,12 +7,6 @@
 using namespace std;
 using namespace cv;
 
-#define FRAME_WIDTH 640
-#define FRAME_HEIGHT 480
-#define MAX_NUM_OBJECTS 10
-#define MIN_OBJECT_AREA 1000
-#define MAX_OBJECT_AREA 1500000
-
 typedef struct {
     int x;
     int y;
@@ -20,19 +14,24 @@ typedef struct {
 
 typedef struct {
     list<t_Coordenada> objects;
-} t_List;
+} t_Lista;
 
-//int captura(list<t_Coordenada> &objects);
-void *captura(void *objects);
-void equalizeHistogram(Mat threshold, Mat &equalized);
-//void trackObject(t_Coordenada &object);
-void *trackObject(void * obj);
-void detectMultiObject(Mat threshold, Mat &cameraFeed, list<t_Coordenada> &objects);
-void excessOfColourThreshold(Mat cameraFeed, Mat &imgThresholded, vector<float> &values);
-void thresholdOtsu(Mat threshold, Mat &otsu);
-void applyOpening(Mat &threshold, int obj_radius);
-void applyClosing(Mat &threshold, int obj_radius);
+/*! \brief Funcion que permite detectar objetos y calcular sus coordenadas
+ *  \param objects Referencia generia a un tipo lista de coordenadas
+ * 
+ *  Esta funcion se encarga de capturar fotogramas con la camara del robot para
+ *  detectar objetos en su campo de vision y calcular las coordenadas de dichos
+ *  objetos. Estas coordenadas se retornan por referencia a traves de del
+ *  parametro "objects".
+ */
+void * trackMultiObjects(void * objects);
 
+/*! \brief Funcion que permite hacer el seguimiento de las coordenadas de un objeto
+ *  \param obj Referencia generia a un tipo coordenada
+ * 
+ *  Esta funcion se encarga de capturar fotogramas con la camara del robot para
+ *  hacer el seguimiento de un objeto mediante el calculo de sus coordenadas.
+ */
+void * trackObject(void * obj);
 
 #endif /* MODULOCAMARA_H */
-

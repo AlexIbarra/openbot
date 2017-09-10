@@ -1,27 +1,23 @@
 #ifndef MODULOCENTRAL_H
 #define MODULOCENTRAL_H
 #include "moduloCamara.h"
-//~ #include "moduloCamara_old.h"
-#include <list>
-
-//~ typedef enum t_GlobalSt {st_buscaPunto, st_visitaPunto};
-typedef enum t_EstadoBusca {st_buscaPunto, st_visitaPunto, st_izq, st_der, st_trayizq, st_trayder, st_recto, st_encontrado, st_perdido};
-
-#define NUM_CUADRANTES 6
-#define INF 9999
 
 typedef struct {
-	t_Coordenada coordenada;
-	int cuadrante;
-	int distancia;	
+    t_Coordenada coordenada;
+    int sector;
+    int distancia;	
 } t_DatoVision;
 
-int calculaEstado( int x, int y, int ultSt);
-void ejecuta( int st);
-int run();
-void visitaPunto();
-void buscaPuntoCercano(list<t_Coordenada> objetos, int cuadrante, t_DatoVision &punto);
-void buscaPuntoCercano_old(t_Coordenada aux, int cuadrante, t_DatoVision &punto);
 
-#endif /* MODULOBROKER_H */
+/*! \brief Funcion principal del robot
+ * 
+ *  Esta funcion es la encargada de conectar con los distintos modulos
+ *  del robot para llevar a cabo el procesameinto de la imagen tomada con
+ *  la camara, el calculo de las coordenadas de los objetos detectados y
+ *  el calculo de la trayectoria que debe tomar el robot para visitar
+ *  los objetos.
+ */
+void run();
+
+#endif /* MODULOCENTRAL_H */
 

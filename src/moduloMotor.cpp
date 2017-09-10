@@ -1,26 +1,33 @@
+#include <iostream>
+#include <unistd.h>
 #include <wiringPi.h>
 #include "moduloMotor.h"
 
-/*
-*
-* NOTA: falta ajustar un poco más las cifras, sobretodo el parado a 319 y el resto actualizarlas en consecuencia.
-*
-*/
+using namespace std;
+
+#define pwmMotorD 13
+#define pwmMotorI 18
+#define PWM_CLOCK 96
+#define PWM_RANGE 4300
 
 void initMotores() {
-	wiringPiSetupGpio();
-    // Primero se establece el modo --> void pinMode (int pin, int mode);
+    /* Se inicializa la libreria wiringPi */
+    wiringPiSetupGpio();
+    
+    /* 
+     * Se establece el moodo de funcionamiento (de salida) para los pines del motor
+     * izquierdo y derecho.
+     */
     pinMode(pwmMotorI, PWM_OUTPUT);
     pinMode(pwmMotorD, PWM_OUTPUT);
 
-    //put PWM in mark-space mode, which will give you 
-    //the traditional (and easily predictable) PWM
+    /* Se establece el modo de funcionamiento del PWM */
     pwmSetMode(PWM_MODE_MS);
 
-    //Establecemos el rango
+    /* Se establece el rango en el registro del generador PWM */
     pwmSetRange(PWM_RANGE);
 
-    //Establecemos el divisor del reloj
+    /* Se establece el valor del divisor del reloj */
     pwmSetClock(PWM_CLOCK);
 }
 
@@ -28,51 +35,56 @@ void parar() {
     pwmWrite(pwmMotorD, 320);
     pwmWrite(pwmMotorI, 319);
 }
+
 void retroceder(){
     pwmWrite(pwmMotorD, 327);
     pwmWrite(pwmMotorI, 312); 
 }
+
 void avanza(){
     pwmWrite(pwmMotorD, 316);
     pwmWrite(pwmMotorI, 324); 
 }
+
 void trayectoriaIzq(){
     pwmWrite(pwmMotorD, 317);
     pwmWrite(pwmMotorI, 321); 
 }
+
 void trayectoriaDer(){
     pwmWrite(pwmMotorD, 319);
     pwmWrite(pwmMotorI, 322); 
 }
+
 void avanzaLento(){
     pwmWrite(pwmMotorD, 318);
     pwmWrite(pwmMotorI, 322); 
 }
+
 void rotaIzq(){
     pwmWrite(pwmMotorD, 317);
     pwmWrite(pwmMotorI, 318); 
 }
+
 void rotaDcha(){
     pwmWrite(pwmMotorD, 322);
     pwmWrite(pwmMotorI, 322);
 }
 
-//El robot da una vuelta completa a la derecha en 30 segundos.
 void vuelta(){
-	pwmWrite(pwmMotorD, 322);
+    pwmWrite(pwmMotorD, 322);
     pwmWrite(pwmMotorI, 323);	
 }
-//Hace un barrido de unos 60 grados aproximadamente.
-//Si en 30 seg rota 360 grados, en 5 seg gira 60 grados
+
 void giraFoto(){
-	pwmWrite(pwmMotorD, 322);
+    pwmWrite(pwmMotorD, 322);
     pwmWrite(pwmMotorI, 323);	
-    sleep(5.1);
+    sleep(5);
     parar();
 }
-//El robot da una vuelta más rápida a la derecha en 11 segundos.
+
 void vueltaRapida(){
-	pwmWrite(pwmMotorD, 324);
+    pwmWrite(pwmMotorD, 324);
     pwmWrite(pwmMotorI, 325);	
 }
 
