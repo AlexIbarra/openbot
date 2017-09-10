@@ -1,8 +1,5 @@
 #include <unistd.h>
 #include <iostream>
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/core/core.hpp"
 #include "moduloCamara.h"
 #include <stdio.h>
 #include <vector>
@@ -12,6 +9,45 @@ using namespace std;
 
 #define ExG 1
 #define ExR 2
+
+void histogramCalculation(const Mat &Image, Mat &histoImage) {
+    int histSize = 255;
+    // Set the ranges ( for B,G,R) )
+    float range[] = { 0, 256 } ;
+    const float* histRange = { range };
+    bool uniform = true; bool accumulate = false;
+    Mat b_hist, g_hist, r_hist;
+    
+    vector<Mat> bgr_planes;
+    split(Image, bgr_planes );
+    
+    // Compute the histograms:
+    calcHist( &bgr_planes[0], 1, 0, Mat(), b_hist, 1, &histSize, &histRange, uniform, accumulate );
+    calcHist( &bgr_planes[1], 1, 0, Mat(), g_hist, 1, &histSize, &histRange, uniform, accumulate );
+    calcHist( &bgr_planes[2], 1, 0, Mat(), r_hist, 1, &histSize, &histRange, uniform, accumulate );
+    
+    // Draw the histograms for B, G and R
+    int hist_w = 512; int hist_h = 400;
+    int bin_w = cvRound( (double) hist_w/histSize );
+    Mat histImage( hist_h, hist_w, CV_8UC3, Scalar( 0,0,0) );
+    
+    // Normalize the result to [ 0, histImage.rows ]
+    normalize(b_hist, b_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
+    normalize(g_hist, g_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
+    normalize(r_hist, r_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
+    
+    // Draw for each channel
+    for( int i = 1; i < histSize; i++ ){
+        line( histImage, Point( bin_w*(i-1), hist_h - cvRound(b_hist.at<float>(i-1)) ) , 
+            Point( bin_w*(i), hist_h - cvRound(b_hist.at<float>(i)) ), Scalar( 255, 0, 0), 2, 8, 0 );
+        line( histImage, Point( bin_w*(i-1), hist_h - cvRound(g_hist.at<float>(i-1)) ) , 
+            Point( bin_w*(i), hist_h - cvRound(g_hist.at<float>(i)) ), Scalar( 0, 255, 0), 2, 8, 0 );
+        line( histImage, Point( bin_w*(i-1), hist_h - cvRound(r_hist.at<float>(i-1)) ) , 
+            Point( bin_w*(i), hist_h - cvRound(r_hist.at<float>(i)) ), Scalar( 0, 0, 255), 2, 8, 0 );
+    }
+    
+    histoImage = histImage;
+}
 
 static void modifyChannels(vector<float> &channels, int excessType) {
 
@@ -35,28 +71,34 @@ static void modifyChannels(vector<float> &channels, int excessType) {
 void equalizeHistogram(Mat threshold, Mat &equalized) {   
     /********* Ecualizacion de histograma *********/
     vector<Mat> channels;
-	// Cambiamos el formato de color (BGR a YCrCb)
-	cvtColor(threshold, equalized, CV_BGR2YCrCb);
-	
-	// Dividimos los canales de la imagen ecualizada en un vector
-	split(equalized,channels);
-	
-	// Realizamos la ecualizacion del canal 0 (Y)
-	equalizeHist(channels[0], channels[0]);
-	
-	// Volvemos a juntar los canales (ecualizado Y)
-	merge(channels,equalized);
-	
-	// Volvemos a cambiar el formato de color para que se pueda mostrar correctamente (YCrCb a BGR)
-	cvtColor(equalized, equalized, CV_YCrCb2BGR);
-	/*********************************************/   
+    // Cambiamos el formato de color (BGR a YCrCb)
+    cvtColor(threshold, equalized, CV_BGR2YCrCb);
+
+    // Dividimos los canales de la imagen ecualizada en un vector
+    split(equalized,channels);
+
+    // Realizamos la ecualizacion del canal 0 (Y)
+    equalizeHist(channels[0], channels[0]);
+
+    // Volvemos a juntar los canales (ecualizado Y)
+    merge(channels,equalized);
+
+    // Volvemos a cambiar el formato de color para que se pueda mostrar correctamente (YCrCb a BGR)
+    cvtColor(equalized, equalized, CV_YCrCb2BGR);
+    /*********************************************/   
 }
 
-// Funcion para aplicar una binarizacion de la imagen con
-// el algoritmo Otsu
-void thresholdOtsu(Mat equalized, Mat &otsu) {
-	
-	threshold(equalized, otsu, 127, 255, THRESH_BINARY | THRESH_OTSU);
+// Funciones para aplicar una binarizacion a la imagen
+void thresholdOtsu(Mat input, Mat &output) {	
+    threshold(input, output, 127, 255, THRESH_BINARY | THRESH_OTSU);
+}
+
+void thresoldAdaptative(Mat input, Mat &output) {
+    adaptiveThreshold(input, output, 220, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 5, 8);
+}
+
+void thresoldAdaptativeGaussian(Mat input, Mat &output) {
+    adaptiveThreshold(input, output, 127, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 11, 12);
 }
 
 // Morphological opening (removes small objects from the foreground)
@@ -96,7 +138,8 @@ void *trackObject(void * obj) {
         cout << "Cannot open the web cam" << endl;
     }
     
-    Mat imgOriginal, imgGray, imgThresholded, imgNormalized;
+    Mat imgOriginal, imgGray, imgThresholded, imgNormalized, imgPlotter,
+            imgOtsu, imgAdaptative, imgAdaptativeGau;
 	
     vector<Mat> channels;
 
@@ -134,6 +177,10 @@ void *trackObject(void * obj) {
          * el resto de la imagenen negro)
          */
         threshold(imgNormalized, imgThresholded, 180, 255, THRESH_BINARY);
+        
+        thresholdOtsu(imgNormalized, imgOtsu);
+        thresoldAdaptative(imgNormalized, imgAdaptative);
+        thresoldAdaptativeGaussian(imgNormalized, imgAdaptativeGau);
 
 
         Moments oMoments = moments(imgThresholded);
@@ -153,10 +200,25 @@ void *trackObject(void * obj) {
 
 //            circle(imgOriginal, Point(object->x, object->y), 10, Scalar(255, 0, 0));
         }
-//        imshow("Thresholdede", imgThresholded);
+        imshow("Thresholded", imgThresholded);
+        imwrite( "../img/ThresholdedMulti.jpg", imgThresholded );
+        imshow("Otsu", imgOtsu);
+        imwrite( "../img/Otsu.jpg", imgOtsu );
+        imshow("Adaptative", imgAdaptative);
+        imwrite( "../img/Adaptative.jpg", imgAdaptative );
+        imshow("Adaptative Gaussian", imgAdaptativeGau);
+        imwrite( "../img/AdaptativeGau.jpg", imgAdaptativeGau );
+//        imwrite( "../img/Thresholded.jpg", imgThresholded );
 //        imshow("Original", imgOriginal);
+//        imwrite( "../img/Original.jpg", imgOriginal );
 //        imshow("Excess of red", imgGray);
-//        waitKey(30);
+//        imwrite( "../img/EOR.jpg", imgGray );
+//        imshow("Normalized image", imgNormalized);
+//        imwrite( "../img/Normalized.jpg", imgNormalized );
+//        histogramcalculation(imgOriginal, imgPlotter);
+//        imshow("Plotter", imgPlotter);
+//        imwrite( "../img/Plotter.jpg", imgPlotter );
+        waitKey(10);
     }
 }
 
@@ -187,7 +249,7 @@ void detectMultiObject(Mat threshold, Mat &cameraFeed, list<t_Coordenada> &objec
                 Moments moment = moments((cv::Mat)contours[index]);//use moments method to find our filtered object
                 double area = moment.m00;
 
-                cout << "AREA: " << area << endl;
+//                cout << "AREA: " << area << endl;
                 if(area > MIN_OBJECT_AREA && area <= MAX_OBJECT_AREA){
 
                     object.x = moment.m10/area;
@@ -217,13 +279,13 @@ void detectMultiObject(Mat threshold, Mat &cameraFeed, list<t_Coordenada> &objec
 }
 
 void excessOfColourThreshold(Mat cameraFeed, Mat &imgThresholded, vector<float> &values) {
-	Mat M = Mat(1, 3, CV_32F); // 1x3 Matrix
+    Mat M = Mat(1, 3, CV_32F); // 1x3 Matrix (x1, x2, x3)
 
-	M.at<float>(0, 0) = values[0];//0.0;
-	M.at<float>(0, 1) = values[1];//-1.0;
-	M.at<float>(0, 2) = values[2];//1.44;
+    M.at<float>(0, 0) = values[0];
+    M.at<float>(0, 1) = values[1];
+    M.at<float>(0, 2) = values[2];
 
-	transform(cameraFeed, imgThresholded, M);
+    transform(cameraFeed, imgThresholded, M);
 }
 
 //Las inicializamos en el punto medio de la pantalla, para que no se muevan los motores de inicio

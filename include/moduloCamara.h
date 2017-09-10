@@ -2,6 +2,8 @@
 #define MODULOCAMARA_H
 
 #include <list>
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/core/core.hpp"
 
 using namespace std;
@@ -29,9 +31,12 @@ void equalizeHistogram(Mat threshold, Mat &equalized);
 void *trackObject(void * obj);
 void detectMultiObject(Mat threshold, Mat &cameraFeed, list<t_Coordenada> &objects);
 void excessOfColourThreshold(Mat cameraFeed, Mat &imgThresholded, vector<float> &values);
-void thresholdOtsu(Mat threshold, Mat &otsu);
+void thresholdOtsu(Mat input, Mat &output);
+void thresoldAdaptative(Mat input, Mat &output);
+void thresoldAdaptativeGaussian(Mat input, Mat &output);
 void applyOpening(Mat &threshold, int obj_radius);
 void applyClosing(Mat &threshold, int obj_radius);
+void histogramCalculation(const Mat &Image, Mat &histoImage);
 
 
 #endif /* MODULOCAMARA_H */
