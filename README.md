@@ -10,7 +10,7 @@ Este robot, ha de cumplir con las especificaciones del concurso MathWorks y real
 
 ## Estructura del Software
 
-La idea en cuanto a la estructura del software, es la de que se modularice lo máximo posible. Por un lado se ha de tener un módulo para el control de cada dispositivo, en este caso para la cámara, mediante el uso de la librería de [OpenCV] [cv] y los motores, mediante el uso de la librería [WiringPI] [wpi]. El módulo de la cámara será el encargado de obtener los datos de entrada del sistema, mientras que el módulo de los motores desarrollarán la salida ya que la finalidad del robot es la de que se mueva hacia los objetivos que se encuentren en el mundo que percibe.
+La idea en cuanto a la estructura del software, es la de que se modularice lo máximo posible. Por un lado se ha de tener un módulo para el control de cada dispositivo, en este caso para la cámara, mediante el uso de la librería de [OpenCV] y los motores, mediante el uso de la librería [WiringPI]. El módulo de la cámara será el encargado de obtener los datos de entrada del sistema, mientras que el módulo de los motores desarrollarán la salida ya que la finalidad del robot es la de que se mueva hacia los objetivos que se encuentren en el mundo que percibe.
 
 
 
@@ -28,8 +28,5 @@ La idea en cuanto a la estructura del software, es la de que se modularice lo m�
 
 
 
-[//]: # (These are reference links used in the body of this note and get stripped out when the markdown processor does its job. There is no need to format nicely because it shouldn't be seen. Thanks SO - http://stackoverflow.com/questions/4823468/store-comments-in-markdown-syntax)
-
-
-   [cv]: <http://opencv.org/>
-   [wpi]: <http://wiringpi.com/>
+   [OpenCV]: <http://opencv.org/>
+   [WiringPI]: <http://wiringpi.com/>
